@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Link from "next/link";
@@ -40,11 +40,15 @@ export default function EditProfilePage() {
     funFact3: "",
     favoriteQuote: "",
   });
-  const [formInitialized, setFormInitialized] = useState(false);
 
-  // Initialize form data when profile loads
+  // Use refs to prevent re-render triggers
+  const formInitialized = useRef(false);
+  const hasStartedEditing = useRef(false);
+  const passwordCheckDone = useRef(false);
+
+  // Initialize form data when profile loads (only once)
   useEffect(() => {
-    if (profile && !formInitialized) {
+    if (profile && !formInitialized.current) {
       setFormData({
         name: profile.name || "",
         location: profile.location || "",
@@ -58,18 +62,19 @@ export default function EditProfilePage() {
         funFact3: profile.funFact3 || "",
         favoriteQuote: profile.favoriteQuote || "",
       });
-      setFormInitialized(true);
+      formInitialized.current = true;
     }
-  }, [profile, formInitialized]);
+  }, [profile]);
 
-  // Check for password in sessionStorage (if profile requires it)
+  // Check for password in sessionStorage (only on initial mount)
   useEffect(() => {
-    if (hasPassword === true) {
+    if (hasPassword === true && !passwordCheckDone.current) {
       const storedPassword = sessionStorage.getItem(`edit-password-${id}`);
-      if (!storedPassword) {
-        // No password stored, redirect back to profile
+      if (!storedPassword && !hasStartedEditing.current) {
+        // No password stored and user hasn't started editing, redirect back to profile
         router.push(`/profile/${id}`);
       }
+      passwordCheckDone.current = true;
     }
   }, [hasPassword, id, router]);
 
@@ -93,6 +98,7 @@ export default function EditProfilePage() {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
+    hasStartedEditing.current = true;
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -393,9 +399,10 @@ export default function EditProfilePage() {
                     currentText={formData.shortTermGoal}
                     userName={formData.name}
                     profileId={id as Id<"profiles">}
-                    onTextUpdate={(text) =>
-                      setFormData((prev) => ({ ...prev, shortTermGoal: text }))
-                    }
+                    onTextUpdate={(text) => {
+                      hasStartedEditing.current = true;
+                      setFormData((prev) => ({ ...prev, shortTermGoal: text }));
+                    }}
                   />
                 </div>
                 <textarea
@@ -419,9 +426,10 @@ export default function EditProfilePage() {
                     currentText={formData.longTermGoal}
                     userName={formData.name}
                     profileId={id as Id<"profiles">}
-                    onTextUpdate={(text) =>
-                      setFormData((prev) => ({ ...prev, longTermGoal: text }))
-                    }
+                    onTextUpdate={(text) => {
+                      hasStartedEditing.current = true;
+                      setFormData((prev) => ({ ...prev, longTermGoal: text }));
+                    }}
                   />
                 </div>
                 <textarea
@@ -460,9 +468,10 @@ export default function EditProfilePage() {
                     currentText={formData.funFact1}
                     userName={formData.name}
                     profileId={id as Id<"profiles">}
-                    onTextUpdate={(text) =>
-                      setFormData((prev) => ({ ...prev, funFact1: text }))
-                    }
+                    onTextUpdate={(text) => {
+                      hasStartedEditing.current = true;
+                      setFormData((prev) => ({ ...prev, funFact1: text }));
+                    }}
                   />
                 </div>
                 <input
@@ -486,9 +495,10 @@ export default function EditProfilePage() {
                     currentText={formData.funFact2}
                     userName={formData.name}
                     profileId={id as Id<"profiles">}
-                    onTextUpdate={(text) =>
-                      setFormData((prev) => ({ ...prev, funFact2: text }))
-                    }
+                    onTextUpdate={(text) => {
+                      hasStartedEditing.current = true;
+                      setFormData((prev) => ({ ...prev, funFact2: text }));
+                    }}
                   />
                 </div>
                 <input
@@ -512,9 +522,10 @@ export default function EditProfilePage() {
                     currentText={formData.funFact3}
                     userName={formData.name}
                     profileId={id as Id<"profiles">}
-                    onTextUpdate={(text) =>
-                      setFormData((prev) => ({ ...prev, funFact3: text }))
-                    }
+                    onTextUpdate={(text) => {
+                      hasStartedEditing.current = true;
+                      setFormData((prev) => ({ ...prev, funFact3: text }));
+                    }}
                   />
                 </div>
                 <input
@@ -540,9 +551,10 @@ export default function EditProfilePage() {
                   currentText={formData.favoriteQuote}
                   userName={formData.name}
                   profileId={id as Id<"profiles">}
-                  onTextUpdate={(text) =>
-                    setFormData((prev) => ({ ...prev, favoriteQuote: text }))
-                  }
+                  onTextUpdate={(text) => {
+                    hasStartedEditing.current = true;
+                    setFormData((prev) => ({ ...prev, favoriteQuote: text }));
+                  }}
                   isQuoteField={true}
                 />
               </div>
