@@ -2,6 +2,16 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
+  aiPayments: defineTable({
+    profileId: v.optional(v.id("profiles")),
+    userName: v.string(),
+    email: v.optional(v.string()),
+    amount: v.number(),
+    fieldUsed: v.string(),
+    status: v.string(), // "pending", "collected", "waived"
+    createdAt: v.number(),
+  }).index("by_status", ["status"]),
+
   profiles: defineTable({
     name: v.string(),
     location: v.string(),
