@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Id } from "@/convex/_generated/dataModel";
 import { Icon } from "@/app/components/Icon";
+import { AIWritingAssistant } from "@/app/components/AIWritingAssistant";
 
 export default function SubmitPage() {
   const router = useRouter();
@@ -298,9 +299,20 @@ export default function SubmitPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
-                  Short-term Goal
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-medium text-slate-700">
+                    Short-term Goal
+                  </label>
+                  <AIWritingAssistant
+                    fieldName="shortTermGoal"
+                    fieldLabel="Short-term Goal"
+                    currentText={formData.shortTermGoal}
+                    userName={formData.name}
+                    onTextUpdate={(text) =>
+                      setFormData((prev) => ({ ...prev, shortTermGoal: text }))
+                    }
+                  />
+                </div>
                 <textarea
                   name="shortTermGoal"
                   value={formData.shortTermGoal}
@@ -312,9 +324,20 @@ export default function SubmitPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
-                  Long-term Goal
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-medium text-slate-700">
+                    Long-term Goal
+                  </label>
+                  <AIWritingAssistant
+                    fieldName="longTermGoal"
+                    fieldLabel="Long-term Goal"
+                    currentText={formData.longTermGoal}
+                    userName={formData.name}
+                    onTextUpdate={(text) =>
+                      setFormData((prev) => ({ ...prev, longTermGoal: text }))
+                    }
+                  />
+                </div>
                 <textarea
                   name="longTermGoal"
                   value={formData.longTermGoal}
@@ -341,9 +364,20 @@ export default function SubmitPage() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
-                  Fun Fact #1
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-medium text-slate-700">
+                    Fun Fact #1
+                  </label>
+                  <AIWritingAssistant
+                    fieldName="funFact1"
+                    fieldLabel="Fun Fact #1"
+                    currentText={formData.funFact1}
+                    userName={formData.name}
+                    onTextUpdate={(text) =>
+                      setFormData((prev) => ({ ...prev, funFact1: text }))
+                    }
+                  />
+                </div>
                 <input
                   type="text"
                   name="funFact1"
@@ -355,9 +389,20 @@ export default function SubmitPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
-                  Fun Fact #2
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-medium text-slate-700">
+                    Fun Fact #2
+                  </label>
+                  <AIWritingAssistant
+                    fieldName="funFact2"
+                    fieldLabel="Fun Fact #2"
+                    currentText={formData.funFact2}
+                    userName={formData.name}
+                    onTextUpdate={(text) =>
+                      setFormData((prev) => ({ ...prev, funFact2: text }))
+                    }
+                  />
+                </div>
                 <input
                   type="text"
                   name="funFact2"
@@ -369,9 +414,20 @@ export default function SubmitPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
-                  Fun Fact #3
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-medium text-slate-700">
+                    Fun Fact #3
+                  </label>
+                  <AIWritingAssistant
+                    fieldName="funFact3"
+                    fieldLabel="Fun Fact #3"
+                    currentText={formData.funFact3}
+                    userName={formData.name}
+                    onTextUpdate={(text) =>
+                      setFormData((prev) => ({ ...prev, funFact3: text }))
+                    }
+                  />
+                </div>
                 <input
                   type="text"
                   name="funFact3"
@@ -385,9 +441,21 @@ export default function SubmitPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">
-                Favorite Quote
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-medium text-slate-700">
+                  Favorite Quote
+                </label>
+                <AIWritingAssistant
+                  fieldName="favoriteQuote"
+                  fieldLabel="Favorite Quote"
+                  currentText={formData.favoriteQuote}
+                  userName={formData.name}
+                  onTextUpdate={(text) =>
+                    setFormData((prev) => ({ ...prev, favoriteQuote: text }))
+                  }
+                  isQuoteField={true}
+                />
+              </div>
               <textarea
                 name="favoriteQuote"
                 value={formData.favoriteQuote}

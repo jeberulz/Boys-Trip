@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as ai from "../ai.js";
 import type * as itinerary from "../itinerary.js";
 import type * as photos from "../photos.js";
 import type * as profiles from "../profiles.js";
@@ -20,6 +21,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  ai: typeof ai;
   itinerary: typeof itinerary;
   photos: typeof photos;
   profiles: typeof profiles;

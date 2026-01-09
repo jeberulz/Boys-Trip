@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Link from "next/link";
@@ -8,6 +8,7 @@ import { useRouter, useParams } from "next/navigation";
 import { Id } from "@/convex/_generated/dataModel";
 import { Icon } from "@/app/components/Icon";
 import { ProfilePhoto } from "@/app/components/ProfilePhoto";
+import { AIWritingAssistant } from "@/app/components/AIWritingAssistant";
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -39,11 +40,15 @@ export default function EditProfilePage() {
     funFact3: "",
     favoriteQuote: "",
   });
-  const [formInitialized, setFormInitialized] = useState(false);
 
-  // Initialize form data when profile loads
+  // Use refs to prevent re-render triggers
+  const formInitialized = useRef(false);
+  const hasStartedEditing = useRef(false);
+  const passwordCheckDone = useRef(false);
+
+  // Initialize form data when profile loads (only once)
   useEffect(() => {
-    if (profile && !formInitialized) {
+    if (profile && !formInitialized.current) {
       setFormData({
         name: profile.name || "",
         location: profile.location || "",
@@ -57,18 +62,19 @@ export default function EditProfilePage() {
         funFact3: profile.funFact3 || "",
         favoriteQuote: profile.favoriteQuote || "",
       });
-      setFormInitialized(true);
+      formInitialized.current = true;
     }
-  }, [profile, formInitialized]);
+  }, [profile]);
 
-  // Check for password in sessionStorage (if profile requires it)
+  // Check for password in sessionStorage (only on initial mount)
   useEffect(() => {
-    if (hasPassword === true) {
+    if (hasPassword === true && !passwordCheckDone.current) {
       const storedPassword = sessionStorage.getItem(`edit-password-${id}`);
-      if (!storedPassword) {
-        // No password stored, redirect back to profile
+      if (!storedPassword && !hasStartedEditing.current) {
+        // No password stored and user hasn't started editing, redirect back to profile
         router.push(`/profile/${id}`);
       }
+      passwordCheckDone.current = true;
     }
   }, [hasPassword, id, router]);
 
@@ -92,6 +98,7 @@ export default function EditProfilePage() {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
+    hasStartedEditing.current = true;
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -382,9 +389,22 @@ export default function EditProfilePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
-                  Short-term Goal
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-medium text-slate-700">
+                    Short-term Goal
+                  </label>
+                  <AIWritingAssistant
+                    fieldName="shortTermGoal"
+                    fieldLabel="Short-term Goal"
+                    currentText={formData.shortTermGoal}
+                    userName={formData.name}
+                    profileId={id as Id<"profiles">}
+                    onTextUpdate={(text) => {
+                      hasStartedEditing.current = true;
+                      setFormData((prev) => ({ ...prev, shortTermGoal: text }));
+                    }}
+                  />
+                </div>
                 <textarea
                   name="shortTermGoal"
                   value={formData.shortTermGoal}
@@ -396,9 +416,22 @@ export default function EditProfilePage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
-                  Long-term Goal
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-medium text-slate-700">
+                    Long-term Goal
+                  </label>
+                  <AIWritingAssistant
+                    fieldName="longTermGoal"
+                    fieldLabel="Long-term Goal"
+                    currentText={formData.longTermGoal}
+                    userName={formData.name}
+                    profileId={id as Id<"profiles">}
+                    onTextUpdate={(text) => {
+                      hasStartedEditing.current = true;
+                      setFormData((prev) => ({ ...prev, longTermGoal: text }));
+                    }}
+                  />
+                </div>
                 <textarea
                   name="longTermGoal"
                   value={formData.longTermGoal}
@@ -425,9 +458,22 @@ export default function EditProfilePage() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
-                  Fun Fact #1
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-medium text-slate-700">
+                    Fun Fact #1
+                  </label>
+                  <AIWritingAssistant
+                    fieldName="funFact1"
+                    fieldLabel="Fun Fact #1"
+                    currentText={formData.funFact1}
+                    userName={formData.name}
+                    profileId={id as Id<"profiles">}
+                    onTextUpdate={(text) => {
+                      hasStartedEditing.current = true;
+                      setFormData((prev) => ({ ...prev, funFact1: text }));
+                    }}
+                  />
+                </div>
                 <input
                   type="text"
                   name="funFact1"
@@ -439,9 +485,22 @@ export default function EditProfilePage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
-                  Fun Fact #2
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-medium text-slate-700">
+                    Fun Fact #2
+                  </label>
+                  <AIWritingAssistant
+                    fieldName="funFact2"
+                    fieldLabel="Fun Fact #2"
+                    currentText={formData.funFact2}
+                    userName={formData.name}
+                    profileId={id as Id<"profiles">}
+                    onTextUpdate={(text) => {
+                      hasStartedEditing.current = true;
+                      setFormData((prev) => ({ ...prev, funFact2: text }));
+                    }}
+                  />
+                </div>
                 <input
                   type="text"
                   name="funFact2"
@@ -453,9 +512,22 @@ export default function EditProfilePage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
-                  Fun Fact #3
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-medium text-slate-700">
+                    Fun Fact #3
+                  </label>
+                  <AIWritingAssistant
+                    fieldName="funFact3"
+                    fieldLabel="Fun Fact #3"
+                    currentText={formData.funFact3}
+                    userName={formData.name}
+                    profileId={id as Id<"profiles">}
+                    onTextUpdate={(text) => {
+                      hasStartedEditing.current = true;
+                      setFormData((prev) => ({ ...prev, funFact3: text }));
+                    }}
+                  />
+                </div>
                 <input
                   type="text"
                   name="funFact3"
@@ -469,9 +541,23 @@ export default function EditProfilePage() {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">
-                Favorite Quote
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-medium text-slate-700">
+                  Favorite Quote
+                </label>
+                <AIWritingAssistant
+                  fieldName="favoriteQuote"
+                  fieldLabel="Favorite Quote"
+                  currentText={formData.favoriteQuote}
+                  userName={formData.name}
+                  profileId={id as Id<"profiles">}
+                  onTextUpdate={(text) => {
+                    hasStartedEditing.current = true;
+                    setFormData((prev) => ({ ...prev, favoriteQuote: text }));
+                  }}
+                  isQuoteField={true}
+                />
+              </div>
               <textarea
                 name="favoriteQuote"
                 value={formData.favoriteQuote}
