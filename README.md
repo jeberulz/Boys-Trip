@@ -4,13 +4,14 @@ A Next.js web application for trip participants to share personal introductions 
 
 ## Features
 
+- 🔐 **Password Protection** - Private access for trip participants only
 - 🏠 **Landing Page** - Trip details and participant count with real-time updates
 - 📝 **Intro Submission Form** - Comprehensive form to submit personal details
+- 📸 **Photo Upload** - Upload profile photos with Convex file storage
 - 🖼️ **Gallery View** - Browse all participant profiles as interactive cards
 - 👤 **Individual Profiles** - Detailed view of each participant's intro
 - ⚡ **Real-time Updates** - Powered by Convex for instant synchronization
 - 📱 **Mobile-First Design** - Responsive layout with navy and orange theme
-- 🔓 **No Authentication Required** - Open access for all trip participants
 
 ## Tech Stack
 
@@ -51,12 +52,19 @@ This will:
 - Generate your `.env.local` file with Convex URLs
 - Start the Convex development server
 
-4. Run the development server:
+4. Configure the password (optional):
+Edit `.env.local` and set your desired password:
+```bash
+NEXT_PUBLIC_APP_PASSWORD=yourSecretPassword
+```
+Default password is `boysTrip2026`
+
+5. Run the development server:
 ```bash
 npm run dev
 ```
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser
+6. Open [http://localhost:3000](http://localhost:3000) in your browser and enter the password
 
 ## Project Structure
 
@@ -86,8 +94,27 @@ The `profiles` table includes:
 - `longTermGoal` - Long-term goal
 - `funFact1`, `funFact2`, `funFact3` - Three fun facts
 - `favoriteQuote` - Favorite quote
-- `photoUrl` - Optional photo URL
+- `photoUrl` - Optional external photo URL (fallback)
+- `photoStorageId` - Convex storage ID for uploaded photos
 - `createdAt` - Timestamp
+
+## Password Protection
+
+The app is protected by a simple password gate to keep it private for trip participants only. The password is configurable via the `NEXT_PUBLIC_APP_PASSWORD` environment variable.
+
+**Default Password:** `boysTrip2026`
+
+**To Change:** Update the value in `.env.local`
+
+The authentication state is stored in browser localStorage, so users only need to enter the password once per device.
+
+## Photo Upload
+
+Profile photos are stored using Convex's built-in file storage:
+- Max file size: 5MB
+- Accepted formats: All image types (jpg, png, gif, etc.)
+- Photos are served via Convex CDN
+- Automatic fallback to user's initial if no photo uploaded
 
 ## Available Scripts
 
