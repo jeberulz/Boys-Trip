@@ -302,7 +302,7 @@ Important:
           "anthropic-version": "2023-06-01",
         },
         body: JSON.stringify({
-          model: "claude-3-5-sonnet-20241022",
+          model: "claude-sonnet-4-20250514",
           max_tokens: 4000,
           messages: [
             {
@@ -332,7 +332,7 @@ Important:
       return { success: true, count: activities.length };
     } catch (error) {
       console.error("Error generating itinerary:", error);
-      throw new Error("Failed to generate itinerary. Please try again.");
+      throw new Error(`Failed to generate itinerary: ${error instanceof Error ? error.message : String(error)}`);
     }
   },
 });

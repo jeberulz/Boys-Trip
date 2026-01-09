@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { Icon } from "./Icon";
 
 interface SuggestActivityFormProps {
   onClose: () => void;
@@ -53,54 +54,33 @@ export function SuggestActivityForm({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-lg max-w-2xl w-full my-8 shadow-2xl">
-        {/* Header */}
-        <div className="p-6 border-b border-navy-100">
-          <div className="flex items-start justify-between">
-            <div>
-              <h2 className="text-2xl font-bold text-navy-600">
-                Suggest Alternative Activity
-              </h2>
-              <p className="text-navy-500 mt-1">
-                Have a better idea? Share it with the group!
-              </p>
-            </div>
-            <button
-              onClick={onClose}
-              className="text-navy-400 hover:text-navy-600 transition-colors ml-4"
-            >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          </div>
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+      <div className="bg-white w-full max-w-md rounded-xl shadow-2xl p-6 animate-slide-up">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-lg font-semibold text-slate-900">
+            Suggest Activity
+          </h3>
+          <button
+            onClick={onClose}
+            className="text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            <Icon name="lucide:x" size={18} />
+          </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {/* Day and Time Slot */}
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-navy-600 font-semibold mb-2">
-                Which Day? *
+              <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">
+                Day
               </label>
               <select
                 name="day"
                 value={formData.day}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 border-2 border-navy-200 rounded-lg focus:border-orange-500 focus:outline-none transition-colors"
+                className="w-full bg-slate-50 border border-slate-200 rounded px-3 py-2 text-xs outline-none focus:border-orange-500 transition-colors"
               >
                 {[1, 2, 3, 4, 5, 6, 7].map((day) => (
                   <option key={day} value={day}>
@@ -110,15 +90,15 @@ export function SuggestActivityForm({
               </select>
             </div>
             <div>
-              <label className="block text-navy-600 font-semibold mb-2">
-                Time Slot *
+              <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">
+                Time Slot
               </label>
               <select
                 name="timeSlot"
                 value={formData.timeSlot}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 border-2 border-navy-200 rounded-lg focus:border-orange-500 focus:outline-none transition-colors"
+                className="w-full bg-slate-50 border border-slate-200 rounded px-3 py-2 text-xs outline-none focus:border-orange-500 transition-colors"
               >
                 <option value="Morning">Morning</option>
                 <option value="Afternoon">Afternoon</option>
@@ -129,8 +109,8 @@ export function SuggestActivityForm({
 
           {/* Title */}
           <div>
-            <label className="block text-navy-600 font-semibold mb-2">
-              Activity Title *
+            <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">
+              Activity Title
             </label>
             <input
               type="text"
@@ -138,79 +118,73 @@ export function SuggestActivityForm({
               value={formData.title}
               onChange={handleChange}
               required
-              placeholder="e.g., Sunset Hike at Lion's Head"
-              className="w-full px-4 py-3 border-2 border-navy-200 rounded-lg focus:border-orange-500 focus:outline-none transition-colors"
+              placeholder="e.g. Shark Cage Diving"
+              className="w-full bg-transparent border-b border-slate-200 py-2 text-sm focus:border-orange-500 outline-none transition-colors"
             />
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-navy-600 font-semibold mb-2">
-              Description *
+            <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">
+              Description
             </label>
             <textarea
               name="description"
               value={formData.description}
               onChange={handleChange}
               required
-              rows={4}
-              placeholder="Describe the activity in 2-3 sentences..."
-              className="w-full px-4 py-3 border-2 border-navy-200 rounded-lg focus:border-orange-500 focus:outline-none transition-colors resize-none"
+              rows={2}
+              placeholder="Why should we do this?"
+              className="w-full bg-transparent border-b border-slate-200 py-2 text-sm focus:border-orange-500 outline-none resize-none transition-colors"
             />
           </div>
 
-          {/* Location */}
-          <div>
-            <label className="block text-navy-600 font-semibold mb-2">
-              Location *
-            </label>
-            <input
-              type="text"
-              name="location"
-              value={formData.location}
-              onChange={handleChange}
-              required
-              placeholder="e.g., Lion's Head, Signal Hill"
-              className="w-full px-4 py-3 border-2 border-navy-200 rounded-lg focus:border-orange-500 focus:outline-none transition-colors"
-            />
+          {/* Location and Cost */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">
+                Location
+              </label>
+              <input
+                type="text"
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                required
+                placeholder="e.g. Gansbaai"
+                className="w-full bg-transparent border-b border-slate-200 py-2 text-sm focus:border-orange-500 outline-none transition-colors"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">
+                Est. Cost
+              </label>
+              <input
+                type="text"
+                name="cost"
+                value={formData.cost}
+                onChange={handleChange}
+                required
+                placeholder="e.g. $150"
+                className="w-full bg-transparent border-b border-slate-200 py-2 text-sm focus:border-orange-500 outline-none transition-colors"
+              />
+            </div>
           </div>
 
-          {/* Cost */}
-          <div>
-            <label className="block text-navy-600 font-semibold mb-2">
-              Estimated Cost *
-            </label>
-            <input
-              type="text"
-              name="cost"
-              value={formData.cost}
-              onChange={handleChange}
-              required
-              placeholder="e.g., $0-20, Free"
-              className="w-full px-4 py-3 border-2 border-navy-200 rounded-lg focus:border-orange-500 focus:outline-none transition-colors"
-            />
-            <p className="text-sm text-navy-400 mt-1">
-              Estimated cost per person
-            </p>
-          </div>
-
-          {/* Buttons */}
-          <div className="flex gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 bg-navy-100 hover:bg-navy-200 text-navy-700 font-semibold py-3 rounded-lg transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex-1 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-semibold py-3 rounded-lg transition-colors"
-            >
-              {isSubmitting ? "Submitting..." : "Suggest Activity"}
-            </button>
-          </div>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full mt-4 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white py-3 rounded-lg font-medium text-sm transition-all shadow-md flex items-center justify-center gap-2"
+          >
+            {isSubmitting ? (
+              <>
+                <Icon name="lucide:loader-2" size={16} className="animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              "Submit Suggestion"
+            )}
+          </button>
         </form>
       </div>
     </div>

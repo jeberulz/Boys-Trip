@@ -1,38 +1,59 @@
 "use client";
 
+import { use } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Link from "next/link";
 import { Id } from "@/convex/_generated/dataModel";
 import { ProfilePhoto } from "@/app/components/ProfilePhoto";
+import { Icon } from "@/app/components/Icon";
 
-export default function ProfilePage({ params }: { params: { id: string } }) {
+interface ProfilePageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default function ProfilePage({ params }: ProfilePageProps) {
+  const { id } = use(params);
   const profile = useQuery(api.profiles.get, {
-    id: params.id as Id<"profiles">,
+    id: id as Id<"profiles">,
   });
 
   if (profile === undefined) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-navy-500 to-navy-700 flex items-center justify-center">
-        <div className="text-white text-2xl">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex items-center gap-2 text-slate-500">
+          <Icon name="lucide:loader-2" size={20} className="animate-spin" />
+          <span className="text-sm font-medium">Loading...</span>
+        </div>
       </div>
     );
   }
 
   if (profile === null) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-navy-500 to-navy-700 py-12 px-4">
-        <div className="container mx-auto max-w-4xl">
-          <div className="bg-white rounded-lg shadow-xl p-12 text-center">
-            <h1 className="text-3xl font-bold text-navy-600 mb-4">
+      <div className="pb-20 animate-fade-in">
+        <div className="px-6 py-10">
+          <Link
+            href="/gallery"
+            className="mb-6 text-xs font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1 transition-colors"
+          >
+            <Icon name="lucide:arrow-left" size={14} />
+            Back to Gallery
+          </Link>
+
+          <div className="bg-slate-50 rounded-xl p-12 text-center">
+            <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Icon name="lucide:user-x" size={24} className="text-slate-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">
               Profile Not Found
-            </h1>
-            <p className="text-navy-500 mb-6">
-              This profile doesn't exist or has been removed.
+            </h3>
+            <p className="text-sm text-slate-500 mb-6">
+              This profile doesn&apos;t exist or has been removed.
             </p>
             <Link
               href="/gallery"
-              className="inline-block bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 py-3 rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-medium text-sm px-6 py-2.5 rounded-lg transition-colors"
             >
               Back to Gallery
             </Link>
@@ -42,143 +63,193 @@ export default function ProfilePage({ params }: { params: { id: string } }) {
     );
   }
 
+  const funFacts = [profile.funFact1, profile.funFact2, profile.funFact3].filter(Boolean);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-navy-500 to-navy-700 py-12 px-4">
-      <div className="container mx-auto max-w-4xl">
-        <div className="mb-8 flex gap-4">
+    <div className="min-h-screen pb-20 animate-fade-in bg-slate-50">
+      {/* Hero Section */}
+      <div className="relative">
+        {/* Background Image with Overlay */}
+        <div className="absolute inset-0 h-72 overflow-hidden">
+          <ProfilePhoto
+            photoStorageId={profile.photoStorageId}
+            photoUrl={profile.photoUrl}
+            name={profile.name}
+            size="xl"
+            className="w-full h-full object-cover object-center blur-sm scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-900/60 via-slate-900/40 to-slate-50" />
+        </div>
+
+        {/* Floating Back Button */}
+        <div className="relative z-10 px-6 pt-6">
           <Link
             href="/gallery"
-            className="text-orange-300 hover:text-orange-400 flex items-center gap-2"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white/90 backdrop-blur-sm rounded-full text-sm font-medium text-slate-700 hover:bg-white transition-all shadow-sm"
           >
-            ← Back to Gallery
-          </Link>
-          <Link
-            href="/"
-            className="text-orange-300 hover:text-orange-400 flex items-center gap-2"
-          >
-            Home
+            <Icon name="lucide:arrow-left" size={16} />
+            Back
           </Link>
         </div>
 
-        <div className="bg-white rounded-lg shadow-2xl overflow-hidden">
-          {/* Header with Photo */}
-          <div className="relative h-64 md:h-80 flex items-center justify-center overflow-hidden">
-            <ProfilePhoto
-              photoStorageId={profile.photoStorageId}
-              photoUrl={profile.photoUrl}
-              name={profile.name}
-              size="xl"
-              className="w-full h-full"
-            />
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-6">
-              <h1 className="text-4xl md:text-5xl font-bold text-white">
-                {profile.name}
-              </h1>
-              <p className="text-xl text-white/90 flex items-center gap-2 mt-2">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                {profile.location}
-              </p>
+        {/* Profile Card */}
+        <div className="relative z-10 px-6 pt-24">
+          <div className="max-w-xl mx-auto relative">
+            {/* Overlapping Avatar */}
+            <div className="absolute -top-8 left-1/2 -translate-x-1/2 z-20">
+              <ProfilePhoto
+                photoStorageId={profile.photoStorageId}
+                photoUrl={profile.photoUrl}
+                name={profile.name}
+                size="lg"
+                className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover object-center"
+              />
+            </div>
+
+            <div className="relative bg-white rounded-2xl shadow-lg">
+              {/* Profile Header */}
+              <div className="px-6 pt-20 pb-5 text-center">
+                <h1 className="text-2xl font-bold tracking-tight text-slate-900 mb-1">
+                  {profile.name}
+                </h1>
+                <div className="flex items-center justify-center gap-1.5 text-slate-500">
+                  <Icon name="lucide:map-pin" size={14} />
+                  <span className="text-sm">{profile.location}</span>
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="border-t border-slate-100" />
+
+              {/* Content */}
+              <div className="p-6 space-y-6">
+                {/* Background */}
+                {profile.background && (
+                  <section>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Icon name="lucide:briefcase" size={16} className="text-slate-400" />
+                      <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                        Background
+                      </h2>
+                    </div>
+                    <p className="text-sm text-slate-600 leading-relaxed">
+                      {profile.background}
+                    </p>
+                  </section>
+                )}
+
+                {/* Passions */}
+                {profile.passions && (
+                  <section>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Icon name="lucide:heart" size={16} className="text-slate-400" />
+                      <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                        Passions
+                      </h2>
+                    </div>
+                    <p className="text-sm text-slate-600 leading-relaxed">
+                      {profile.passions}
+                    </p>
+                  </section>
+                )}
+
+                {/* Family */}
+                {profile.family && (
+                  <section>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Icon name="lucide:users" size={16} className="text-slate-400" />
+                      <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                        Family
+                      </h2>
+                    </div>
+                    <p className="text-sm text-slate-600 leading-relaxed">
+                      {profile.family}
+                    </p>
+                  </section>
+                )}
+
+                {/* Goals */}
+                {(profile.shortTermGoal || profile.longTermGoal) && (
+                  <section>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Icon name="lucide:target" size={16} className="text-slate-400" />
+                      <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                        Goals
+                      </h2>
+                    </div>
+                    <div className="space-y-3">
+                      {profile.shortTermGoal && (
+                        <div className="flex gap-3">
+                          <Icon name="lucide:zap" size={16} className="text-slate-400 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <span className="text-xs font-medium text-slate-400 uppercase">Short-term</span>
+                            <p className="text-sm text-slate-600">{profile.shortTermGoal}</p>
+                          </div>
+                        </div>
+                      )}
+                      {profile.longTermGoal && (
+                        <div className="flex gap-3">
+                          <Icon name="lucide:rocket" size={16} className="text-slate-400 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <span className="text-xs font-medium text-slate-400 uppercase">Long-term</span>
+                            <p className="text-sm text-slate-600">{profile.longTermGoal}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </section>
+                )}
+
+                {/* Fun Facts */}
+                {funFacts.length > 0 && (
+                  <section>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Icon name="lucide:sparkles" size={16} className="text-slate-400" />
+                      <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                        Fun Facts
+                      </h2>
+                    </div>
+                    <div className="space-y-2">
+                      {funFacts.map((fact, index) => (
+                        <div key={index} className="flex items-start gap-3">
+                          <span className="text-xs font-semibold text-slate-400 mt-0.5">
+                            {index + 1}.
+                          </span>
+                          <p className="text-sm text-slate-600">{fact}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {/* Favorite Quote */}
+                {profile.favoriteQuote && (
+                  <section className="pt-2">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Icon name="lucide:quote" size={16} className="text-slate-400" />
+                      <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                        Favorite Quote
+                      </h2>
+                    </div>
+                    <blockquote className="text-sm text-slate-600 italic leading-relaxed border-l-2 border-slate-200 pl-4">
+                      &ldquo;{profile.favoriteQuote}&rdquo;
+                    </blockquote>
+                  </section>
+                )}
+              </div>
+            </div>
+
+            {/* Back Link */}
+            <div className="pt-6 text-center">
+              <Link
+                href="/gallery"
+                className="inline-flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <Icon name="lucide:arrow-left" size={16} />
+                Back to The Crew
+              </Link>
             </div>
           </div>
-
-          {/* Content */}
-          <div className="p-8 md:p-12">
-            {/* Family */}
-            <section className="mb-8">
-              <h2 className="text-2xl font-bold text-navy-600 mb-3 flex items-center gap-2">
-                <span className="text-orange-500">👨‍👩‍👦</span> Family
-              </h2>
-              <p className="text-navy-700 leading-relaxed">{profile.family}</p>
-            </section>
-
-            {/* Background */}
-            <section className="mb-8">
-              <h2 className="text-2xl font-bold text-navy-600 mb-3 flex items-center gap-2">
-                <span className="text-orange-500">📚</span> Background
-              </h2>
-              <p className="text-navy-700 leading-relaxed">
-                {profile.background}
-              </p>
-            </section>
-
-            {/* Passions */}
-            <section className="mb-8">
-              <h2 className="text-2xl font-bold text-navy-600 mb-3 flex items-center gap-2">
-                <span className="text-orange-500">❤️</span> Passions & Interests
-              </h2>
-              <p className="text-navy-700 leading-relaxed">
-                {profile.passions}
-              </p>
-            </section>
-
-            {/* Goals */}
-            <section className="mb-8">
-              <h2 className="text-2xl font-bold text-navy-600 mb-4 flex items-center gap-2">
-                <span className="text-orange-500">🎯</span> Goals
-              </h2>
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="bg-orange-50 p-6 rounded-lg">
-                  <h3 className="font-bold text-navy-600 mb-2">
-                    Short-term Goal
-                  </h3>
-                  <p className="text-navy-700">{profile.shortTermGoal}</p>
-                </div>
-                <div className="bg-orange-50 p-6 rounded-lg">
-                  <h3 className="font-bold text-navy-600 mb-2">
-                    Long-term Goal
-                  </h3>
-                  <p className="text-navy-700">{profile.longTermGoal}</p>
-                </div>
-              </div>
-            </section>
-
-            {/* Fun Facts */}
-            <section className="mb-8">
-              <h2 className="text-2xl font-bold text-navy-600 mb-4 flex items-center gap-2">
-                <span className="text-orange-500">✨</span> Fun Facts
-              </h2>
-              <div className="space-y-3">
-                <div className="flex items-start gap-3 bg-navy-50 p-4 rounded-lg">
-                  <span className="text-orange-500 font-bold text-lg">1.</span>
-                  <p className="text-navy-700 flex-1">{profile.funFact1}</p>
-                </div>
-                <div className="flex items-start gap-3 bg-navy-50 p-4 rounded-lg">
-                  <span className="text-orange-500 font-bold text-lg">2.</span>
-                  <p className="text-navy-700 flex-1">{profile.funFact2}</p>
-                </div>
-                <div className="flex items-start gap-3 bg-navy-50 p-4 rounded-lg">
-                  <span className="text-orange-500 font-bold text-lg">3.</span>
-                  <p className="text-navy-700 flex-1">{profile.funFact3}</p>
-                </div>
-              </div>
-            </section>
-
-            {/* Favorite Quote */}
-            <section className="bg-gradient-to-r from-orange-100 to-orange-50 p-8 rounded-lg border-l-4 border-orange-500">
-              <h2 className="text-xl font-bold text-navy-600 mb-3">
-                Favorite Quote
-              </h2>
-              <blockquote className="text-navy-700 text-lg italic leading-relaxed">
-                "{profile.favoriteQuote}"
-              </blockquote>
-            </section>
-          </div>
-        </div>
-
-        {/* Back to Gallery Button */}
-        <div className="mt-8 text-center">
-          <Link
-            href="/gallery"
-            className="inline-block bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
-          >
-            View All Profiles
-          </Link>
         </div>
       </div>
     </div>

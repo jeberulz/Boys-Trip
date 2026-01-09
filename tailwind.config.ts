@@ -9,6 +9,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Keep navy for backward compatibility
         navy: {
           50: '#e6e9f0',
           100: '#ccd3e1',
@@ -32,6 +33,24 @@ const config: Config = {
           700: '#995100',
           800: '#663600',
           900: '#331b00',
+        },
+      },
+      fontFamily: {
+        sans: ['var(--font-geist)', 'system-ui', 'sans-serif'],
+        serif: ['var(--font-instrument-serif)', 'Georgia', 'serif'],
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.3s ease-out forwards',
+        'slide-up': 'slideUp 0.3s ease-out forwards',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        slideUp: {
+          '0%': { opacity: '0', transform: 'translateY(100%)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
         },
       },
     },

@@ -47,7 +47,7 @@ export function ProfilePhoto({
   // Fallback to initial letter
   return (
     <div
-      className={`${sizeClasses[size]} flex items-center justify-center bg-gradient-to-br from-orange-400 to-orange-600 text-white font-bold ${className}`}
+      className={`${sizeClasses[size]} flex items-center justify-center bg-gradient-to-br from-slate-400 to-slate-600 text-white font-bold ${className}`}
     >
       {name.charAt(0).toUpperCase()}
     </div>

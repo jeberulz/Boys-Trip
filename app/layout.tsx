@@ -1,13 +1,24 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Geist } from "next/font/google";
+import { Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import { ConvexClientProvider } from "./ConvexClientProvider";
 import { PasswordGate } from "./components/PasswordGate";
+import { ToastProvider } from "./components/Toast";
 
-const inter = Inter({ subsets: ["latin"] });
+const geist = Geist({
+  subsets: ["latin"],
+  variable: "--font-geist",
+});
+
+const instrumentSerif = Instrument_Serif({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-instrument-serif",
+});
 
 export const metadata: Metadata = {
-  title: "Boys Trip Intro",
+  title: "Boys Trip 2026",
   description: "Get to know your fellow travelers!",
 };
 
@@ -17,10 +28,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="en" className={`${geist.variable} ${instrumentSerif.variable}`}>
+      <body className="font-sans">
         <ConvexClientProvider>
-          <PasswordGate>{children}</PasswordGate>
+          <ToastProvider>
+            <PasswordGate>{children}</PasswordGate>
+          </ToastProvider>
         </ConvexClientProvider>
       </body>
     </html>

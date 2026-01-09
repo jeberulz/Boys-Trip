@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, ReactNode } from "react";
+import { Header } from "./Header";
+import { Icon } from "./Icon";
 
 interface PasswordGateProps {
   children: ReactNode;
@@ -44,60 +46,72 @@ export function PasswordGate({ children }: PasswordGateProps) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-navy-500 to-navy-700 flex items-center justify-center">
-        <div className="text-white text-2xl">Loading...</div>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="flex items-center gap-2 text-slate-500">
+          <Icon name="lucide:loader-2" size={20} className="animate-spin" />
+          <span className="text-sm font-medium">Loading...</span>
+        </div>
       </div>
     );
   }
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-navy-500 to-navy-700 flex items-center justify-center px-4">
-        <div className="bg-white rounded-lg shadow-2xl p-8 md:p-12 max-w-md w-full">
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center px-4">
+        <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-8 md:p-10 max-w-sm w-full animate-fade-in">
+          {/* Logo */}
+          <div className="flex justify-center mb-8">
+            <div className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center text-white font-semibold text-lg tracking-tighter">
+              BT
+            </div>
+          </div>
+
+          {/* Heading */}
           <div className="text-center mb-8">
-            <div className="text-6xl mb-4">🏔️</div>
-            <h1 className="text-4xl font-bold text-navy-600 mb-2">
+            <h1 className="text-xl font-semibold tracking-tight text-slate-900 mb-2">
               Boys Trip 2026
             </h1>
-            <div className="h-1 w-24 bg-orange-500 mx-auto mb-4"></div>
-            <p className="text-navy-500">
-              This is a private page for trip participants only
+            <p className="text-sm text-slate-500">
+              Private access for trip participants
             </p>
           </div>
 
+          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label
                 htmlFor="password"
-                className="block text-navy-600 font-semibold mb-2"
+                className="block text-xs font-medium text-slate-700 mb-2"
               >
-                Enter Password
+                Password
               </label>
               <input
                 type="password"
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-navy-200 rounded-lg focus:border-orange-500 focus:outline-none transition-colors"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none transition-colors text-sm"
                 placeholder="Enter the trip password"
                 autoFocus
               />
               {error && (
-                <p className="text-red-500 text-sm mt-2 font-medium">{error}</p>
+                <p className="text-red-500 text-xs mt-2 font-medium">{error}</p>
               )}
             </div>
 
             <button
               type="submit"
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg py-4 rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+              className="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium text-sm py-3 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
             >
               Enter
+              <Icon name="lucide:arrow-right" size={16} />
             </button>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-navy-100">
-            <p className="text-sm text-navy-400 text-center">
-              Don't have the password? Contact the trip organizer.
+          {/* Footer */}
+          <div className="mt-8 pt-6 border-t border-slate-100">
+            <p className="text-xs text-slate-400 text-center">
+              Don&apos;t have the password? Contact the trip organizer.
             </p>
           </div>
         </div>
@@ -105,19 +119,12 @@ export function PasswordGate({ children }: PasswordGateProps) {
     );
   }
 
-  // Add logout button that's always accessible
   return (
-    <>
-      <div className="fixed top-4 right-4 z-50">
-        <button
-          onClick={handleLogout}
-          className="bg-navy-600 hover:bg-navy-700 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-semibold transition-colors"
-          title="Logout"
-        >
-          Logout
-        </button>
-      </div>
-      {children}
-    </>
+    <div className="min-h-screen bg-slate-50">
+      <Header onLogout={handleLogout} />
+      <main className="max-w-5xl mx-auto bg-white min-h-screen shadow-sm border-x border-slate-100">
+        {children}
+      </main>
+    </div>
   );
 }

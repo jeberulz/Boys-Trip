@@ -3,101 +3,100 @@
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Link from "next/link";
+import { Icon } from "@/app/components/Icon";
+import { ProfileCard } from "@/app/components/ProfileCard";
 
 export default function Home() {
   const participantCount = useQuery(api.profiles.count);
+  const profiles = useQuery(api.profiles.list);
+
+  const recentProfiles = profiles?.slice(0, 3) || [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-navy-500 to-navy-700">
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto text-center">
-          {/* Header */}
-          <div className="mb-12">
-            <h1 className="text-5xl md:text-7xl font-bold text-white mb-4">
-              Boys Trip 2026
-            </h1>
-            <div className="h-2 w-32 bg-orange-500 mx-auto mb-8"></div>
-            <p className="text-xl md:text-2xl text-navy-100">
-              Adventure Awaits. Brotherhood Begins.
-            </p>
-          </div>
+    <div className="animate-fade-in">
+      {/* Hero Section */}
+      <div className="px-6 py-20 md:py-32 flex flex-col items-center text-center">
+        {/* Intro Count Badge */}
+        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-50 border border-slate-200 text-xs font-medium text-slate-600 mb-8">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+          </span>
+          {participantCount !== undefined ? participantCount : "..."} intros submitted
+        </span>
 
-          {/* Trip Details Card */}
-          <div className="bg-white rounded-lg shadow-2xl p-8 md:p-12 mb-8">
-            <h2 className="text-3xl font-bold text-navy-500 mb-6">
-              Trip Details
-            </h2>
-            <div className="grid md:grid-cols-2 gap-6 text-left mb-8">
-              <div className="border-l-4 border-orange-500 pl-4">
-                <h3 className="text-sm font-semibold text-navy-400 uppercase tracking-wide">
-                  Destination
-                </h3>
-                <p className="text-2xl font-bold text-navy-600">TBD</p>
-              </div>
-              <div className="border-l-4 border-orange-500 pl-4">
-                <h3 className="text-sm font-semibold text-navy-400 uppercase tracking-wide">
-                  Date
-                </h3>
-                <p className="text-2xl font-bold text-navy-600">Coming Soon</p>
-              </div>
-              <div className="border-l-4 border-orange-500 pl-4">
-                <h3 className="text-sm font-semibold text-navy-400 uppercase tracking-wide">
-                  Participants
-                </h3>
-                <p className="text-2xl font-bold text-orange-500">
-                  {participantCount !== undefined ? participantCount : "..."}{" "}
-                  {participantCount === 1 ? "Traveler" : "Travelers"}
-                </p>
-              </div>
-              <div className="border-l-4 border-orange-500 pl-4">
-                <h3 className="text-sm font-semibold text-navy-400 uppercase tracking-wide">
-                  Duration
-                </h3>
-                <p className="text-2xl font-bold text-navy-600">TBD</p>
-              </div>
-            </div>
+        {/* Main Heading */}
+        <h1 className="text-5xl md:text-7xl font-extralight tracking-tighter text-slate-900 mb-6 max-w-3xl">
+          Cape Town <br />
+          <span className="text-slate-400">Feb 27 — March 7</span>
+        </h1>
 
-            <div className="bg-orange-50 rounded-lg p-6 mb-8">
-              <h3 className="text-xl font-bold text-navy-600 mb-3">
-                Why This Trip?
-              </h3>
-              <p className="text-navy-600 leading-relaxed">
-                This is more than just a getaway—it's a chance to connect,
-                share stories, and create lasting memories. Before we embark on
-                this adventure together, let's get to know each other better!
-              </p>
-            </div>
-          </div>
+        {/* Subtitle */}
+        <p className="leading-relaxed text-lg font-normal text-slate-500 max-w-lg mb-10">
+          Get to know the crew before we land. Share your story, set your goals, and prepare for the legendary week ahead.
+        </p>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link
-              href="/submit"
-              className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
-            >
-              Submit Your Intro
-            </Link>
-            <Link
-              href="/gallery"
-              className="w-full sm:w-auto bg-white hover:bg-navy-50 text-navy-500 font-bold text-lg px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all border-2 border-navy-500"
-            >
-              View All Intros
-            </Link>
-            <Link
-              href="/itinerary"
-              className="w-full sm:w-auto bg-indigo-500 hover:bg-indigo-600 text-white font-bold text-lg px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
-            >
-              Plan Itinerary
-            </Link>
-          </div>
-
-          {/* Footer Note */}
-          <p className="text-navy-200 mt-12 text-sm">
-            Share your story, learn about your travel companions, and get ready
-            for an unforgettable experience!
-          </p>
+        {/* CTA Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
+          <Link
+            href="/submit"
+            className="bg-slate-900 hover:bg-slate-800 text-white px-8 py-3.5 rounded-lg font-medium text-sm transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 flex items-center justify-center gap-2"
+          >
+            Submit Your Intro
+            <Icon name="lucide:arrow-right" size={16} />
+          </Link>
+          <Link
+            href="/itinerary"
+            className="bg-white border border-slate-200 hover:border-slate-300 text-slate-700 px-8 py-3.5 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2"
+          >
+            View Itinerary
+          </Link>
         </div>
       </div>
+
+      {/* Recent Additions Section */}
+      {recentProfiles.length > 0 && (
+        <div className="px-6 py-12 border-t border-slate-100 bg-slate-50/50">
+          <div className="flex items-center justify-between mb-8 max-w-4xl mx-auto">
+            <h3 className="text-sm font-normal text-slate-900 tracking-tight">
+              Recent Additions
+            </h3>
+            <Link
+              href="/gallery"
+              className="text-xs text-orange-600 font-medium hover:underline"
+            >
+              View All
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            {recentProfiles.map((profile) => (
+              <ProfileCard
+                key={profile._id}
+                profile={profile}
+                variant="compact"
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Empty State - Show when no profiles yet */}
+      {recentProfiles.length === 0 && participantCount !== undefined && (
+        <div className="px-6 py-12 border-t border-slate-100 bg-slate-50/50">
+          <div className="max-w-4xl mx-auto text-center py-8">
+            <p className="text-sm text-slate-500 mb-4">
+              No intros submitted yet. Be the first to introduce yourself!
+            </p>
+            <Link
+              href="/submit"
+              className="text-sm font-medium text-orange-600 hover:text-orange-700"
+            >
+              Submit Your Intro →
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import { Icon } from "./Icon";
+import { useToast } from "./Toast";
 
 interface ActivityCardProps {
   activity: {
@@ -18,16 +20,17 @@ interface ActivityCardProps {
     voteScore: number;
     upvotes: number;
     downvotes: number;
+    commentCount?: number;
   };
   onViewDetails: () => void;
 }
 
 export function ActivityCard({ activity, onViewDetails }: ActivityCardProps) {
   const voteOnActivity = useMutation(api.itinerary.voteOnActivity);
+  const { showToast } = useToast();
   const [userId, setUserId] = useState<string>("");
   const [isVoting, setIsVoting] = useState(false);
 
-  // Get or create user ID from localStorage
   useEffect(() => {
     let id = localStorage.getItem("boys-trip-user-id");
     if (!id) {
@@ -47,179 +50,135 @@ export function ActivityCard({ activity, onViewDetails }: ActivityCardProps) {
 
     setIsVoting(true);
     try {
-      await voteOnActivity({
+      const result = await voteOnActivity({
         activityId: activity._id,
         userId,
         voteType,
       });
+
+      // Show toast based on action
+      if (result.action === "removed") {
+        showToast("Vote removed");
+      } else if (result.action === "updated") {
+        showToast(voteType === 1 ? "Changed to upvote" : "Changed to downvote");
+      } else {
+        showToast(voteType === 1 ? "Upvoted!" : "Downvoted");
+      }
     } catch (error) {
       console.error("Error voting:", error);
+      showToast("Failed to vote", "error");
     } finally {
       setIsVoting(false);
     }
   };
 
-  const getTimeSlotColor = (timeSlot: string) => {
+  const getTimeSlotBadge = (timeSlot: string) => {
     switch (timeSlot) {
       case "Morning":
-        return "bg-amber-100 text-amber-700";
+        return "bg-amber-100 text-amber-700 border-amber-200";
       case "Afternoon":
-        return "bg-blue-100 text-blue-700";
+        return "bg-sky-100 text-sky-700 border-sky-200";
       case "Evening":
-        return "bg-purple-100 text-purple-700";
+        return "bg-violet-100 text-violet-700 border-violet-200";
       default:
-        return "bg-gray-100 text-gray-700";
+        return "bg-slate-100 text-slate-700 border-slate-200";
     }
   };
 
-  const getVoteScoreColor = (score: number) => {
-    if (score > 0) return "text-green-600";
-    if (score < 0) return "text-red-600";
-    return "text-gray-600";
+  const getVoteColor = (score: number) => {
+    if (score > 0) return "text-emerald-600";
+    if (score < 0) return "text-red-500";
+    return "text-slate-400";
   };
 
+  const isHot = activity.voteScore >= 5;
+
   return (
-    <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-5 border border-navy-100">
-      {/* Header */}
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col sm:flex-row hover:shadow-md transition-shadow group">
+      {/* Content */}
+      <div className="flex-1 p-4 flex gap-4">
+        {/* Vote Column */}
+        <div className="flex flex-col items-center justify-center gap-1 min-w-[32px]">
+          <button
+            onClick={() => handleVote(1)}
+            disabled={isVoting}
+            className={`p-1 rounded hover:bg-slate-50 transition-colors disabled:opacity-50 ${
+              userVote === 1
+                ? "text-emerald-600"
+                : "text-slate-400 hover:text-emerald-600"
+            }`}
+          >
+            <Icon name="lucide:thumbs-up" size={18} />
+          </button>
+          <span className={`text-sm font-bold ${getVoteColor(activity.voteScore)}`}>
+            {activity.voteScore}
+          </span>
+          <button
+            onClick={() => handleVote(-1)}
+            disabled={isVoting}
+            className={`p-1 rounded hover:bg-slate-50 transition-colors disabled:opacity-50 ${
+              userVote === -1
+                ? "text-red-500"
+                : "text-slate-400 hover:text-red-500"
+            }`}
+          >
+            <Icon name="lucide:thumbs-down" size={18} />
+          </button>
+        </div>
+
+        {/* Details */}
+        <div className="flex-1 cursor-pointer" onClick={onViewDetails}>
+          {/* Badges */}
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span
-              className={`px-2 py-1 rounded-full text-xs font-semibold ${getTimeSlotColor(
+              className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide border ${getTimeSlotBadge(
                 activity.timeSlot
               )}`}
             >
               {activity.timeSlot}
             </span>
-            <span
-              className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                activity.source === "ai"
-                  ? "bg-indigo-100 text-indigo-700"
-                  : "bg-green-100 text-green-700"
-              }`}
-            >
-              {activity.source === "ai" ? "AI Generated" : "User Suggested"}
-            </span>
+            {activity.source !== "ai" && (
+              <span className="px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide border flex items-center gap-1 bg-emerald-50 text-emerald-700 border-emerald-100">
+                <Icon name="lucide:user" size={10} />
+                User Added
+              </span>
+            )}
+            {isHot && (
+              <span className="px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-amber-50 text-amber-600 border border-amber-100 flex items-center gap-1">
+                <Icon name="lucide:flame" size={10} />
+                Hot
+              </span>
+            )}
           </div>
-          <h3 className="text-lg font-bold text-navy-600">{activity.title}</h3>
+
+          {/* Title */}
+          <h3 className="text-base font-normal text-slate-900 mb-1 group-hover:text-orange-600 transition-colors">
+            {activity.title}
+          </h3>
+
+          {/* Description */}
+          <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-3">
+            {activity.description}
+          </p>
+
+          {/* Meta */}
+          <div className="flex items-center justify-between mt-auto">
+            <div className="flex items-center gap-4 text-[11px] text-slate-400 font-medium">
+              <span className="flex items-center gap-1">
+                <Icon name="lucide:map-pin" size={12} />
+                {activity.location}
+              </span>
+              <span className="flex items-center gap-1">
+                <Icon name="lucide:dollar-sign" size={12} />
+                {activity.cost}
+              </span>
+            </div>
+            <button className="text-xs text-slate-400 flex items-center gap-1 hover:text-slate-600 transition-colors">
+              <Icon name="lucide:message-square" size={12} />
+              {activity.commentCount || 0}
+            </button>
+          </div>
         </div>
-      </div>
-
-      {/* Description */}
-      <p className="text-navy-600 text-sm mb-3 line-clamp-2">
-        {activity.description}
-      </p>
-
-      {/* Details */}
-      <div className="space-y-1 mb-4 text-sm">
-        <div className="flex items-center gap-2 text-navy-500">
-          <svg
-            className="w-4 h-4"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              fillRule="evenodd"
-              d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-              clipRule="evenodd"
-            />
-          </svg>
-          <span>{activity.location}</span>
-        </div>
-        <div className="flex items-center gap-2 text-navy-500">
-          <svg
-            className="w-4 h-4"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
-            <path
-              fillRule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z"
-              clipRule="evenodd"
-            />
-          </svg>
-          <span className="font-semibold">{activity.cost}</span>
-        </div>
-      </div>
-
-      {/* Footer with Voting and Actions */}
-      <div className="flex items-center justify-between pt-3 border-t border-navy-100">
-        {/* Voting */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => handleVote(1)}
-            disabled={isVoting}
-            className={`p-1.5 rounded-lg transition-all ${
-              userVote === 1
-                ? "bg-green-100 text-green-600"
-                : "hover:bg-green-50 text-gray-500 hover:text-green-600"
-            } disabled:opacity-50`}
-          >
-            <svg
-              className="w-5 h-5"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </button>
-
-          <span
-            className={`font-bold text-lg min-w-[2rem] text-center ${getVoteScoreColor(
-              activity.voteScore
-            )}`}
-          >
-            {activity.voteScore}
-          </span>
-
-          <button
-            onClick={() => handleVote(-1)}
-            disabled={isVoting}
-            className={`p-1.5 rounded-lg transition-all ${
-              userVote === -1
-                ? "bg-red-100 text-red-600"
-                : "hover:bg-red-50 text-gray-500 hover:text-red-600"
-            } disabled:opacity-50`}
-          >
-            <svg
-              className="w-5 h-5"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l4.293-4.293a1 1 0 011.414 0z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </button>
-        </div>
-
-        {/* View Details Button */}
-        <button
-          onClick={onViewDetails}
-          className="text-orange-500 hover:text-orange-600 font-semibold text-sm flex items-center gap-1 transition-colors"
-        >
-          View Details
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 5l7 7-7 7"
-            />
-          </svg>
-        </button>
       </div>
     </div>
   );
