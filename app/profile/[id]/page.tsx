@@ -108,8 +108,8 @@ export default function ProfilePage({ params }: ProfilePageProps) {
 
             <div className="relative bg-white rounded-2xl shadow-lg">
               {/* Profile Header */}
-              <div className="px-6 pt-20 pb-5 text-center">
-                <h1 className="text-2xl font-bold tracking-tight text-slate-900 mb-1">
+              <div className="px-6 pt-24 pb-5 text-center">
+                <h1 className="text-2xl font-bold tracking-tight text-slate-900 mb-3">
                   {profile.name}
                 </h1>
                 <div className="flex items-center justify-center gap-1.5 text-slate-500">
