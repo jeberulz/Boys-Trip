@@ -11,12 +11,18 @@ export default function GalleryPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-navy-500 to-navy-700 py-12 px-4">
       <div className="container mx-auto max-w-7xl">
-        <div className="mb-8">
+        <div className="mb-8 flex gap-4 flex-wrap">
           <Link
             href="/"
             className="text-orange-300 hover:text-orange-400 flex items-center gap-2"
           >
             ← Back to Home
+          </Link>
+          <Link
+            href="/itinerary"
+            className="text-indigo-300 hover:text-indigo-400 flex items-center gap-2"
+          >
+            📅 View Itinerary
           </Link>
         </div>
 

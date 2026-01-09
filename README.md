@@ -10,6 +10,7 @@ A Next.js web application for trip participants to share personal introductions 
 - 📸 **Photo Upload** - Upload profile photos with Convex file storage
 - 🖼️ **Gallery View** - Browse all participant profiles as interactive cards
 - 👤 **Individual Profiles** - Detailed view of each participant's intro
+- 🗺️ **AI-Powered Itinerary** - Collaborative trip planning with voting and comments
 - ⚡ **Real-time Updates** - Powered by Convex for instant synchronization
 - 📱 **Mobile-First Design** - Responsive layout with navy and orange theme
 
@@ -70,16 +71,25 @@ npm run dev
 
 ```
 /app
+  /components       # Reusable components
+    ActivityCard.tsx       # Activity voting card
+    ActivityModal.tsx      # Activity detail modal
+    PasswordGate.tsx       # Password protection
+    ProfilePhoto.tsx       # Profile photo display
+    SuggestActivityForm.tsx # User activity suggestion
   /gallery          # Gallery page showing all profiles
+  /itinerary        # AI-powered trip planning
   /profile/[id]     # Individual profile view
   /submit           # Form to submit new intro
   page.tsx          # Landing page
-  layout.tsx        # Root layout with Convex provider
-  globals.css       # Global styles with Tailwind
+  layout.tsx        # Root layout with providers
+  globals.css       # Global styles
 
 /convex
-  schema.ts         # Database schema definition
-  profiles.ts       # Convex queries and mutations
+  schema.ts         # Database schema (profiles, activities, votes, comments)
+  profiles.ts       # Profile queries and mutations
+  itinerary.ts      # Itinerary AI generation and voting
+  photos.ts         # Photo upload functionality
 ```
 
 ## Database Schema
@@ -115,6 +125,40 @@ Profile photos are stored using Convex's built-in file storage:
 - Accepted formats: All image types (jpg, png, gif, etc.)
 - Photos are served via Convex CDN
 - Automatic fallback to user's initial if no photo uploaded
+
+## AI-Powered Itinerary
+
+The itinerary feature uses Claude AI to generate and manage trip plans:
+
+### Features
+- **AI Generation**: Automatically generates 7-day Cape Town itinerary with activities
+- **Voting System**: Upvote/downvote activities to help group decide
+- **Comments**: Discuss activities with real-time comments
+- **User Suggestions**: Add your own activity ideas
+- **Real-time Sync**: All votes and comments update instantly
+
+### Setup
+1. Get an Anthropic API key from [console.anthropic.com](https://console.anthropic.com)
+2. Add to `.env.local`:
+   ```bash
+   ANTHROPIC_API_KEY=your-key-here
+   ```
+3. Click "Regenerate with AI" on the itinerary page
+
+### How It Works
+- AI generates activities across Morning, Afternoon, and Evening slots
+- Each activity includes description, location, and estimated cost
+- Vote on favorites - highest votes are prioritized
+- Add comments to discuss or suggest modifications
+- Suggest alternative activities for any day/time slot
+
+### Activity Types
+- Adventure (hiking, water sports, etc.)
+- Food & Dining (restaurants, markets, tastings)
+- Nightlife (bars, clubs, live music)
+- Beaches (Camps Bay, Clifton, etc.)
+- Culture (museums, tours, landmarks)
+- Day Trips (Winelands, Cape Point, Hermanus)
 
 ## Available Scripts
 

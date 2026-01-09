@@ -83,6 +83,12 @@ export default function Home() {
             >
               View All Intros
             </Link>
+            <Link
+              href="/itinerary"
+              className="w-full sm:w-auto bg-indigo-500 hover:bg-indigo-600 text-white font-bold text-lg px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+            >
+              Plan Itinerary
+            </Link>
           </div>
 
           {/* Footer Note */}
