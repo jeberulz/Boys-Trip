@@ -129,12 +129,6 @@ export function ActivityModal({
 
         {/* Modal Header */}
         <div className="h-32 bg-slate-100 w-full relative flex-shrink-0">
-          {activityDetails.source === "ai" && (
-            <div className="absolute top-4 left-4 bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide border border-purple-200 shadow-sm z-10 flex items-center gap-1">
-              <Icon name="lucide:sparkles" size={10} />
-              AI Generated
-            </div>
-          )}
           <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300" />
           <div className="absolute bottom-4 left-6 right-16 text-slate-900">
             <span

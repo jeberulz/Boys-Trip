@@ -137,12 +137,6 @@ export function ActivityCard({ activity, onViewDetails }: ActivityCardProps) {
             >
               {activity.timeSlot}
             </span>
-            {activity.source !== "ai" && (
-              <span className="px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide border flex items-center gap-1 bg-emerald-50 text-emerald-700 border-emerald-100">
-                <Icon name="lucide:user" size={10} />
-                User Added
-              </span>
-            )}
             {isHot && (
               <span className="px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-amber-50 text-amber-600 border border-amber-100 flex items-center gap-1">
                 <Icon name="lucide:flame" size={10} />
