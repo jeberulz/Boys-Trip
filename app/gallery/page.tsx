@@ -3,6 +3,7 @@
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Link from "next/link";
+import { ProfilePhoto } from "@/app/components/ProfilePhoto";
 
 export default function GalleryPage() {
   const profiles = useQuery(api.profiles.list);
@@ -55,18 +56,14 @@ export default function GalleryPage() {
               >
                 <div className="bg-white rounded-lg shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 overflow-hidden h-full">
                   {/* Photo or Placeholder */}
-                  <div className="relative h-48 bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
-                    {profile.photoUrl ? (
-                      <img
-                        src={profile.photoUrl}
-                        alt={profile.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="text-white text-6xl font-bold">
-                        {profile.name.charAt(0)}
-                      </div>
-                    )}
+                  <div className="relative h-48 flex items-center justify-center overflow-hidden">
+                    <ProfilePhoto
+                      photoStorageId={profile.photoStorageId}
+                      photoUrl={profile.photoUrl}
+                      name={profile.name}
+                      size="xl"
+                      className="w-full h-48"
+                    />
                   </div>
 
                   {/* Card Content */}

@@ -4,6 +4,7 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Link from "next/link";
 import { Id } from "@/convex/_generated/dataModel";
+import { ProfilePhoto } from "@/app/components/ProfilePhoto";
 
 export default function ProfilePage({ params }: { params: { id: string } }) {
   const profile = useQuery(api.profiles.get, {
@@ -61,18 +62,14 @@ export default function ProfilePage({ params }: { params: { id: string } }) {
 
         <div className="bg-white rounded-lg shadow-2xl overflow-hidden">
           {/* Header with Photo */}
-          <div className="relative h-64 md:h-80 bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
-            {profile.photoUrl ? (
-              <img
-                src={profile.photoUrl}
-                alt={profile.name}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="text-white text-8xl font-bold">
-                {profile.name.charAt(0)}
-              </div>
-            )}
+          <div className="relative h-64 md:h-80 flex items-center justify-center overflow-hidden">
+            <ProfilePhoto
+              photoStorageId={profile.photoStorageId}
+              photoUrl={profile.photoUrl}
+              name={profile.name}
+              size="xl"
+              className="w-full h-full"
+            />
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-6">
               <h1 className="text-4xl md:text-5xl font-bold text-white">
                 {profile.name}

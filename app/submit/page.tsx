@@ -5,11 +5,15 @@ import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Id } from "@/convex/_generated/dataModel";
 
 export default function SubmitPage() {
   const router = useRouter();
   const createProfile = useMutation(api.profiles.create);
+  const generateUploadUrl = useMutation(api.photos.generateUploadUrl);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
   const [formData, setFormData] = useState({
     name: "",
     location: "",
@@ -32,11 +36,50 @@ export default function SubmitPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        alert("Please select an image file");
+        return;
+      }
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert("File size must be less than 5MB");
+        return;
+      }
+      setSelectedFile(file);
+      // Create preview URL
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
+      let photoStorageId: Id<"_storage"> | undefined;
+
+      // Upload photo if selected
+      if (selectedFile) {
+        const uploadUrl = await generateUploadUrl();
+        const result = await fetch(uploadUrl, {
+          method: "POST",
+          headers: { "Content-Type": selectedFile.type },
+          body: selectedFile,
+        });
+
+        if (!result.ok) {
+          throw new Error("Failed to upload photo");
+        }
+
+        const { storageId } = await result.json();
+        photoStorageId = storageId;
+      }
+
       await createProfile({
         name: formData.name,
         location: formData.location,
@@ -50,6 +93,7 @@ export default function SubmitPage() {
         funFact3: formData.funFact3,
         favoriteQuote: formData.favoriteQuote,
         photoUrl: formData.photoUrl || undefined,
+        photoStorageId: photoStorageId,
       });
 
       // Redirect to gallery
@@ -263,22 +307,32 @@ export default function SubmitPage() {
               />
             </div>
 
-            {/* Photo URL (Optional) */}
-            <div>
+            {/* Photo Upload (Optional) */}
+            <div className="bg-navy-50 p-6 rounded-lg">
               <label className="block text-navy-600 font-semibold mb-2">
-                Photo URL (Optional)
+                Profile Photo (Optional)
               </label>
-              <input
-                type="url"
-                name="photoUrl"
-                value={formData.photoUrl}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border-2 border-navy-200 rounded-lg focus:border-orange-500 focus:outline-none transition-colors"
-                placeholder="https://example.com/your-photo.jpg"
-              />
-              <p className="text-sm text-navy-400 mt-1">
-                Link to a photo of yourself (optional)
-              </p>
+              <div className="space-y-4">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="w-full px-4 py-3 border-2 border-navy-200 rounded-lg focus:border-orange-500 focus:outline-none transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-orange-500 file:text-white file:font-semibold hover:file:bg-orange-600 file:cursor-pointer"
+                />
+                {previewUrl && (
+                  <div className="mt-4">
+                    <p className="text-sm text-navy-600 mb-2">Preview:</p>
+                    <img
+                      src={previewUrl}
+                      alt="Preview"
+                      className="w-32 h-32 object-cover rounded-lg border-2 border-orange-300"
+                    />
+                  </div>
+                )}
+                <p className="text-sm text-navy-400">
+                  Upload a photo (max 5MB) or leave blank to use your initial
+                </p>
+              </div>
             </div>
 
             {/* Submit Button */}

@@ -15,6 +15,7 @@ export default defineSchema({
     funFact3: v.string(),
     favoriteQuote: v.string(),
     photoUrl: v.optional(v.string()),
+    photoStorageId: v.optional(v.id("_storage")),
     createdAt: v.number(),
   }),
 });

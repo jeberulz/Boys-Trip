@@ -37,6 +37,7 @@ export const create = mutation({
     funFact3: v.string(),
     favoriteQuote: v.string(),
     photoUrl: v.optional(v.string()),
+    photoStorageId: v.optional(v.id("_storage")),
   },
   handler: async (ctx, args) => {
     const profileId = await ctx.db.insert("profiles", {
