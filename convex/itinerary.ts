@@ -172,6 +172,8 @@ export const suggestActivity = mutation({
     description: v.string(),
     location: v.string(),
     cost: v.string(),
+    imageUrl: v.optional(v.string()),
+    externalLink: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const activityId = await ctx.db.insert("activities", {
@@ -182,10 +184,41 @@ export const suggestActivity = mutation({
       location: args.location,
       cost: args.cost,
       source: "user",
+      imageUrl: args.imageUrl,
+      externalLink: args.externalLink,
       createdAt: Date.now(),
     });
 
     return activityId;
+  },
+});
+
+// Get featured event (specifically the myx! event for now)
+export const getFeaturedEvent = query({
+  args: {},
+  handler: async (ctx) => {
+    const activity = await ctx.db
+      .query("activities")
+      .filter((q) => q.eq(q.field("title"), "myx! coming down south"))
+      .first();
+
+    if (!activity) return null;
+
+    const votes = await ctx.db
+      .query("votes")
+      .withIndex("by_activity", (q) => q.eq("activityId", activity._id))
+      .collect();
+
+    const voteScore = votes.reduce((sum, vote) => sum + vote.voteType, 0);
+    const upvotes = votes.filter(v => v.voteType === 1).length;
+    const downvotes = votes.filter(v => v.voteType === -1).length;
+
+    return {
+      ...activity,
+      voteScore,
+      upvotes,
+      downvotes,
+    };
   },
 });
 
@@ -231,6 +264,8 @@ export const insertActivities = mutation({
         description: v.string(),
         location: v.string(),
         cost: v.string(),
+        imageUrl: v.optional(v.string()),
+        externalLink: v.optional(v.string()),
       })
     ),
   },

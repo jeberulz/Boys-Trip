@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { ActivityCard } from "@/app/components/ActivityCard";
 import { ActivityModal } from "@/app/components/ActivityModal";
 import { SuggestActivityForm } from "@/app/components/SuggestActivityForm";
+import { AdminGateModal } from "@/app/components/AdminGateModal";
 import { Icon } from "@/app/components/Icon";
 import { Id } from "@/convex/_generated/dataModel";
 import { useToast } from "@/app/components/Toast";
@@ -17,7 +18,23 @@ export default function ItineraryPage() {
 
   const [selectedActivityId, setSelectedActivityId] = useState<Id<"activities"> | null>(null);
   const [showSuggestForm, setShowSuggestForm] = useState(false);
+  const [showAdminModal, setShowAdminModal] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Check admin status on mount
+  useEffect(() => {
+    const adminStatus = localStorage.getItem("boys-trip-admin");
+    setIsAdmin(adminStatus === "true");
+  }, []);
+
+  const handleGenerateClick = () => {
+    if (!isAdmin) {
+      setShowAdminModal(true);
+      return;
+    }
+    handleGenerate();
+  };
 
   const handleGenerate = async () => {
     if (!confirm("This will clear the current itinerary and generate a new one. Continue?")) {
@@ -63,7 +80,7 @@ export default function ItineraryPage() {
             </p>
           </div>
           <button
-            onClick={handleGenerate}
+            onClick={handleGenerateClick}
             disabled={isGenerating}
             className="bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white px-5 py-2.5 rounded-lg font-medium text-xs transition-all flex items-center justify-center gap-2 shadow-sm"
           >
@@ -97,7 +114,7 @@ export default function ItineraryPage() {
               Click &quot;Regenerate with AI&quot; to create your Cape Town adventure itinerary!
             </p>
             <button
-              onClick={handleGenerate}
+              onClick={handleGenerateClick}
               disabled={isGenerating}
               className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-medium text-sm px-6 py-2.5 rounded-lg transition-colors"
             >
@@ -174,6 +191,16 @@ export default function ItineraryPage() {
           onClose={() => setShowSuggestForm(false)}
           onSuccess={() => {
             showToast("Activity suggestion added!");
+          }}
+        />
+      )}
+
+      {showAdminModal && (
+        <AdminGateModal
+          onClose={() => setShowAdminModal(false)}
+          onSuccess={() => {
+            setIsAdmin(true);
+            showToast("Admin access unlocked!");
           }}
         />
       )}

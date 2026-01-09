@@ -128,9 +128,20 @@ export function ActivityModal({
         </button>
 
         {/* Modal Header */}
-        <div className="h-32 bg-slate-100 w-full relative flex-shrink-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300" />
-          <div className="absolute bottom-4 left-6 right-16 text-slate-900">
+        <div className="h-32 bg-slate-100 w-full relative flex-shrink-0 group">
+          {activityDetails.imageUrl ? (
+            <>
+              <div 
+                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                style={{ backgroundImage: `url(${activityDetails.imageUrl})` }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent" />
+            </>
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300" />
+          )}
+          
+          <div className="absolute bottom-4 left-6 right-16 text-white z-10">
             <span
               className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide mb-2 ${getTimeSlotBadge(
                 activityDetails.timeSlot
@@ -138,7 +149,7 @@ export function ActivityModal({
             >
               {activityDetails.timeSlot}
             </span>
-            <h2 className="text-xl font-bold tracking-tight line-clamp-2">
+            <h2 className={`text-xl font-bold tracking-tight line-clamp-2 ${activityDetails.imageUrl ? 'text-white drop-shadow-md' : 'text-slate-900'}`}>
               {activityDetails.title}
             </h2>
           </div>
@@ -246,17 +257,30 @@ export function ActivityModal({
         </div>
 
         {/* Footer Action */}
-        <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center flex-shrink-0">
-          <button
-            onClick={() => {
-              onClose();
-              onSuggestAlternative();
-            }}
-            className="text-sm font-medium text-orange-600 hover:text-orange-700 transition-colors flex items-center gap-1.5"
-          >
-            <Icon name="lucide:plus" size={16} />
-            Suggest Alternative
-          </button>
+        <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center flex-shrink-0 gap-2">
+          {activityDetails.externalLink ? (
+            <a
+              href={activityDetails.externalLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm"
+            >
+              <Icon name="lucide:ticket" size={16} />
+              Get Tickets
+            </a>
+          ) : (
+            <button
+              onClick={() => {
+                onClose();
+                onSuggestAlternative();
+              }}
+              className="text-sm font-medium text-orange-600 hover:text-orange-700 transition-colors flex items-center gap-1.5"
+            >
+              <Icon name="lucide:plus" size={16} />
+              Suggest Alternative
+            </button>
+          )}
+
           <button
             onClick={onClose}
             className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors px-4 py-2 rounded-lg hover:bg-slate-100"

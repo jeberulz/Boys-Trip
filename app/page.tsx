@@ -3,12 +3,23 @@
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Link from "next/link";
+import { useState } from "react";
 import { Icon } from "@/app/components/Icon";
 import { ProfileCard } from "@/app/components/ProfileCard";
+import { ActivityCard } from "@/app/components/ActivityCard";
+import { ActivityModal } from "@/app/components/ActivityModal";
+import { SuggestActivityForm } from "@/app/components/SuggestActivityForm";
+import { Id } from "@/convex/_generated/dataModel";
+import { useToast } from "@/app/components/Toast";
 
 export default function Home() {
   const participantCount = useQuery(api.profiles.count);
   const profiles = useQuery(api.profiles.list);
+  const featuredEvent = useQuery(api.itinerary.getFeaturedEvent);
+  const { showToast } = useToast();
+
+  const [selectedActivityId, setSelectedActivityId] = useState<Id<"activities"> | null>(null);
+  const [showSuggestForm, setShowSuggestForm] = useState(false);
 
   const recentProfiles = profiles?.slice(0, 3) || [];
 
@@ -54,6 +65,36 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Featured Event Section */}
+      {featuredEvent && (
+        <div className="px-6 py-12 bg-white">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-center gap-2 mb-6">
+              <Icon name="lucide:star" size={16} className="text-orange-500 fill-orange-500" />
+              <h3 className="text-sm font-semibold text-slate-900 tracking-tight uppercase">
+                Featured Event
+              </h3>
+            </div>
+            
+            <ActivityCard
+              activity={featuredEvent}
+              onViewDetails={() => setSelectedActivityId(featuredEvent._id)}
+            />
+            
+            <div className="mt-4 flex justify-end">
+               <a
+                href={featuredEvent.externalLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-orange-600 hover:text-orange-700 font-medium flex items-center gap-1"
+               >
+                 Get Tickets <Icon name="lucide:external-link" size={12} />
+               </a>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Recent Additions Section */}
       {recentProfiles.length > 0 && (
         <div className="px-6 py-12 border-t border-slate-100 bg-slate-50/50">
@@ -96,6 +137,24 @@ export default function Home() {
             </Link>
           </div>
         </div>
+      )}
+
+      {/* Modals */}
+      {selectedActivityId && (
+        <ActivityModal
+          activityId={selectedActivityId}
+          onClose={() => setSelectedActivityId(null)}
+          onSuggestAlternative={() => setShowSuggestForm(true)}
+        />
+      )}
+
+      {showSuggestForm && (
+        <SuggestActivityForm
+          onClose={() => setShowSuggestForm(false)}
+          onSuccess={() => {
+            showToast("Activity suggestion added!");
+          }}
+        />
       )}
     </div>
   );

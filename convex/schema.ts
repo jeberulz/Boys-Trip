@@ -16,7 +16,9 @@ export default defineSchema({
     favoriteQuote: v.string(),
     photoUrl: v.optional(v.string()),
     photoStorageId: v.optional(v.id("_storage")),
+    passwordHash: v.optional(v.string()),
     createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
   }),
   activities: defineTable({
     day: v.number(), // 1-7
@@ -26,6 +28,8 @@ export default defineSchema({
     location: v.string(),
     cost: v.string(),
     source: v.string(), // "ai" or "user"
+    imageUrl: v.optional(v.string()),
+    externalLink: v.optional(v.string()),
     createdAt: v.number(),
   }).index("by_day", ["day"]),
   votes: defineTable({

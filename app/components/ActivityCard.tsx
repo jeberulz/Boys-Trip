@@ -21,6 +21,8 @@ interface ActivityCardProps {
     upvotes: number;
     downvotes: number;
     commentCount?: number;
+    imageUrl?: string;
+    externalLink?: string;
   };
   onViewDetails: () => void;
 }
@@ -125,6 +127,15 @@ export function ActivityCard({ activity, onViewDetails }: ActivityCardProps) {
             <Icon name="lucide:thumbs-down" size={18} />
           </button>
         </div>
+
+        {/* Image Thumbnail */}
+        {activity.imageUrl && (
+          <div 
+            className="w-24 h-24 rounded-lg bg-slate-100 bg-cover bg-center flex-shrink-0 cursor-pointer hidden sm:block"
+            style={{ backgroundImage: `url(${activity.imageUrl})` }}
+            onClick={onViewDetails}
+          />
+        )}
 
         {/* Details */}
         <div className="flex-1 cursor-pointer" onClick={onViewDetails}>
