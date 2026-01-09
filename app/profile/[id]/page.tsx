@@ -96,19 +96,19 @@ export default function ProfilePage({ params }: ProfilePageProps) {
         <div className="relative z-10 px-6 pt-24">
           <div className="max-w-xl mx-auto relative">
             {/* Overlapping Avatar */}
-            <div className="absolute -top-8 left-1/2 -translate-x-1/2 z-20">
+            <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-20">
               <ProfilePhoto
                 photoStorageId={profile.photoStorageId}
                 photoUrl={profile.photoUrl}
                 name={profile.name}
-                size="lg"
+                size="md"
                 className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover object-center"
               />
             </div>
 
             <div className="relative bg-white rounded-2xl shadow-lg">
               {/* Profile Header */}
-              <div className="px-6 pt-24 pb-5 text-center">
+              <div className="px-6 pt-28 pb-5 text-center">
                 <h1 className="text-2xl font-bold tracking-tight text-slate-900 mb-3">
                   {profile.name}
                 </h1>
