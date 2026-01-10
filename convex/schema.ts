@@ -2,6 +2,49 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
+  accommodation: defineTable({
+    name: v.string(),
+    tagline: v.string(),
+    description: v.string(),
+    location: v.string(),
+    address: v.string(),
+    airbnbUrl: v.string(),
+    checkIn: v.string(),
+    checkOut: v.string(),
+    guests: v.number(),
+    bedrooms: v.number(),
+    beds: v.number(),
+    bathrooms: v.number(),
+    amenities: v.array(v.string()),
+    houseRules: v.array(v.string()),
+    highlights: v.array(v.object({
+      icon: v.string(),
+      title: v.string(),
+      description: v.string(),
+    })),
+    images: v.array(v.object({
+      url: v.string(),
+      caption: v.string(),
+      category: v.string(), // "exterior", "living", "bedroom", "kitchen", "bathroom", "view", "amenity"
+    })),
+    hostName: v.string(),
+    hostImage: v.optional(v.string()),
+    rating: v.number(),
+    reviewCount: v.number(),
+    pricePerNight: v.optional(v.number()),
+    createdAt: v.number(),
+  }),
+  rooms: defineTable({
+    accommodationId: v.id("accommodation"),
+    name: v.string(),
+    description: v.string(),
+    bedType: v.string(),
+    capacity: v.number(),
+    features: v.array(v.string()),
+    imageUrl: v.optional(v.string()),
+    assignedProfileId: v.optional(v.id("profiles")),
+    order: v.number(),
+  }).index("by_accommodation", ["accommodationId"]),
   aiPayments: defineTable({
     profileId: v.optional(v.id("profiles")),
     userName: v.string(),

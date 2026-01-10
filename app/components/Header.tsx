@@ -48,6 +48,16 @@ export function Header({ onLogout }: HeaderProps) {
             The Crew
           </Link>
           <Link
+            href="/accommodation"
+            className={`text-xs font-medium transition-colors ${
+              isActive("/accommodation")
+                ? "text-slate-900"
+                : "text-slate-500 hover:text-slate-900"
+            }`}
+          >
+            The Crib
+          </Link>
+          <Link
             href="/itinerary"
             className={`text-xs font-medium transition-colors ${
               isActive("/itinerary")
@@ -102,6 +112,17 @@ export function Header({ onLogout }: HeaderProps) {
             }`}
           >
             The Crew
+          </Link>
+          <Link
+            href="/accommodation"
+            onClick={closeMobileMenu}
+            className={`text-sm font-medium transition-colors py-2 ${
+              isActive("/accommodation")
+                ? "text-slate-900"
+                : "text-slate-500 hover:text-slate-900"
+            }`}
+          >
+            The Crib
           </Link>
           <Link
             href="/itinerary"
