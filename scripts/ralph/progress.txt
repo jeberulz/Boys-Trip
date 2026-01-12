@@ -5,3 +5,22 @@ Started: (pending first run)
 
 ---
 
+## 2026-01-12 - US-001
+- What was implemented: Fixed trip dates from 2026 to 2025 as specified in PRD requirements
+- Files changed: app/lib/tripDates.ts
+- **Learnings for future iterations:**
+  - The tripDates.ts file already existed with full implementation (getTripDay, getDaysUntilTrip, isTripComplete, getTripStatus functions)
+  - Only needed to fix the year from 2026 to 2025 to match PRD spec
+  - The utility already supports optional `now` parameter for testing different dates
+---
+
+## 2026-01-12 - US-002
+- What was implemented: Verified existing getActivitiesByDay query in convex/itinerary.ts meets all acceptance criteria
+- Files changed: None (implementation already existed)
+- **Learnings for future iterations:**
+  - The getActivitiesByDay query was already implemented from a previous feature
+  - It uses the by_day index on activities table for efficient querying
+  - Vote aggregation follows same pattern as getItinerary: collect votes, reduce to get totals
+  - Sorting uses timeSlotOrder object pattern for consistent Morning → Afternoon → Evening ordering
+---
+
