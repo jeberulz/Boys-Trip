@@ -1,8 +1,8 @@
 // Trip date constants and utilities for Cape Town trip
 // Feb 27 - March 7, 2025 (9 days)
 
-export const TRIP_START_DATE = new Date("2026-02-27T00:00:00");
-export const TRIP_END_DATE = new Date("2026-03-07T23:59:59");
+export const TRIP_START_DATE = new Date("2025-02-27T00:00:00");
+export const TRIP_END_DATE = new Date("2025-03-07T23:59:59");
 
 // Total trip days
 export const TRIP_TOTAL_DAYS = 9;
