@@ -129,6 +129,45 @@ export const verifyProfilePassword = mutation({
   },
 });
 
+export const countManagers = query({
+  args: {},
+  handler: async (ctx) => {
+    const profiles = await ctx.db.query("profiles").collect();
+    return profiles.filter((p) => p.isItineraryManager === true).length;
+  },
+});
+
+export const setItineraryManager = mutation({
+  args: {
+    id: v.id("profiles"),
+    isManager: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const profile = await ctx.db.get(args.id);
+    if (!profile) {
+      throw new Error("Profile not found");
+    }
+
+    // If setting to manager, check the limit
+    if (args.isManager) {
+      const profiles = await ctx.db.query("profiles").collect();
+      const managerCount = profiles.filter(
+        (p) => p.isItineraryManager === true && p._id !== args.id
+      ).length;
+      if (managerCount >= 2) {
+        throw new Error("Maximum of 2 managers allowed");
+      }
+    }
+
+    await ctx.db.patch(args.id, {
+      isItineraryManager: args.isManager,
+      updatedAt: Date.now(),
+    });
+
+    return { success: true };
+  },
+});
+
 export const update = mutation({
   args: {
     id: v.id("profiles"),
