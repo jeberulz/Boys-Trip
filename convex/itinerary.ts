@@ -334,6 +334,64 @@ export const insertActivities = mutation({
   },
 });
 
+// Update an activity (managers can edit any, creators can edit their own user-suggested activities)
+export const updateActivity = mutation({
+  args: {
+    activityId: v.id("activities"),
+    editorProfileId: v.id("profiles"),
+    updates: v.object({
+      title: v.optional(v.string()),
+      description: v.optional(v.string()),
+      location: v.optional(v.string()),
+      cost: v.optional(v.string()),
+      day: v.optional(v.number()),
+      timeSlot: v.optional(v.string()),
+      imageUrl: v.optional(v.string()),
+      externalLink: v.optional(v.string()),
+    }),
+  },
+  handler: async (ctx, args) => {
+    // Get the activity
+    const activity = await ctx.db.get(args.activityId);
+    if (!activity) {
+      throw new Error("Activity not found");
+    }
+
+    // Get the editor's profile
+    const editorProfile = await ctx.db.get(args.editorProfileId);
+    if (!editorProfile) {
+      throw new Error("Editor profile not found");
+    }
+
+    // Check authorization
+    const isManager = editorProfile.isItineraryManager === true;
+    const isCreator = activity.creatorProfileId !== undefined &&
+                      activity.creatorProfileId === args.editorProfileId;
+    const isAiGenerated = activity.source === "ai";
+
+    // AI-generated activities can only be edited by managers
+    if (isAiGenerated && !isManager) {
+      throw new Error("Only managers can edit AI-generated activities");
+    }
+
+    // User-suggested activities can be edited by managers OR the creator
+    if (!isAiGenerated && !isManager && !isCreator) {
+      throw new Error("You can only edit activities you created or you must be a manager");
+    }
+
+    // Apply updates
+    await ctx.db.patch(args.activityId, {
+      ...args.updates,
+      lastEditedBy: editorProfile.name,
+      lastEditedAt: Date.now(),
+    });
+
+    // Return the updated activity
+    const updatedActivity = await ctx.db.get(args.activityId);
+    return updatedActivity;
+  },
+});
+
 // Generate itinerary using AI (Anthropic Claude API)
 export const generateItinerary = action({
   args: {},
