@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useQuery, useAction } from "convex/react";
+import { useQuery, useAction, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { ActivityCard } from "@/app/components/ActivityCard";
 import { ActivityModal } from "@/app/components/ActivityModal";
 import { SuggestActivityForm } from "@/app/components/SuggestActivityForm";
 import { AdminGateModal } from "@/app/components/AdminGateModal";
 import { EditActivityModal } from "@/app/components/EditActivityModal";
+import { ConfirmDialog } from "@/app/components/ConfirmDialog";
 import { Icon } from "@/app/components/Icon";
 import { Id } from "@/convex/_generated/dataModel";
 import { useToast } from "@/app/components/Toast";
@@ -29,6 +30,7 @@ interface EditableActivity {
 function ItineraryContent() {
   const itinerary = useQuery(api.itinerary.getItinerary);
   const generateItinerary = useAction(api.itinerary.generateItinerary);
+  const deleteActivity = useMutation(api.itinerary.deleteActivity);
   const { showToast } = useToast();
   const { profileId } = useManager();
 
@@ -38,6 +40,8 @@ function ItineraryContent() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [editingActivity, setEditingActivity] = useState<EditableActivity | null>(null);
+  const [deletingActivityId, setDeletingActivityId] = useState<Id<"activities"> | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Check admin status on mount
   useEffect(() => {
@@ -67,6 +71,25 @@ function ItineraryContent() {
       showToast("Failed to generate itinerary", "error");
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleDeleteActivity = async () => {
+    if (!deletingActivityId || !profileId) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteActivity({
+        activityId: deletingActivityId,
+        deleterProfileId: profileId,
+      });
+      showToast("Activity deleted");
+      setDeletingActivityId(null);
+    } catch (error) {
+      console.error("Error deleting activity:", error);
+      showToast("Failed to delete activity", "error");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -186,6 +209,7 @@ function ItineraryContent() {
                           imageUrl: activity.imageUrl,
                           externalLink: activity.externalLink,
                         })}
+                        onDelete={() => setDeletingActivityId(activity._id)}
                       />
                     ))}
                   </div>
@@ -244,6 +268,19 @@ function ItineraryContent() {
           onSuccess={() => {
             showToast("Activity updated!");
           }}
+        />
+      )}
+
+      {deletingActivityId && (
+        <ConfirmDialog
+          title="Delete Activity"
+          message="Delete this activity? Votes and comments will also be removed."
+          confirmLabel="Delete"
+          cancelLabel="Cancel"
+          isDestructive={true}
+          isLoading={isDeleting}
+          onConfirm={handleDeleteActivity}
+          onCancel={() => setDeletingActivityId(null)}
         />
       )}
     </div>

@@ -28,9 +28,10 @@ interface ActivityCardProps {
   };
   onViewDetails: () => void;
   onEdit?: () => void;
+  onDelete?: () => void;
 }
 
-export function ActivityCard({ activity, onViewDetails, onEdit }: ActivityCardProps) {
+export function ActivityCard({ activity, onViewDetails, onEdit, onDelete }: ActivityCardProps) {
   const voteOnActivity = useMutation(api.itinerary.voteOnActivity);
   const { showToast } = useToast();
   const { isManager, profileId } = useManager();
@@ -199,6 +200,18 @@ export function ActivityCard({ activity, onViewDetails, onEdit }: ActivityCardPr
                   title="Edit activity"
                 >
                   <Icon name="lucide:pencil" size={12} />
+                </button>
+              )}
+              {isManager && onDelete && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete();
+                  }}
+                  className="text-xs text-slate-400 flex items-center gap-1 hover:text-red-600 transition-colors"
+                  title="Delete activity"
+                >
+                  <Icon name="lucide:trash-2" size={12} />
                 </button>
               )}
               <button className="text-xs text-slate-400 flex items-center gap-1 hover:text-slate-600 transition-colors">
