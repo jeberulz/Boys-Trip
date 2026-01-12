@@ -7,21 +7,37 @@ import { ActivityCard } from "@/app/components/ActivityCard";
 import { ActivityModal } from "@/app/components/ActivityModal";
 import { SuggestActivityForm } from "@/app/components/SuggestActivityForm";
 import { AdminGateModal } from "@/app/components/AdminGateModal";
+import { EditActivityModal } from "@/app/components/EditActivityModal";
 import { Icon } from "@/app/components/Icon";
 import { Id } from "@/convex/_generated/dataModel";
 import { useToast } from "@/app/components/Toast";
-import { ManagerProvider } from "@/app/components/ManagerContext";
+import { ManagerProvider, useManager } from "@/app/components/ManagerContext";
+
+// Activity type for edit modal
+interface EditableActivity {
+  _id: Id<"activities">;
+  day: number;
+  timeSlot: string;
+  title: string;
+  description: string;
+  location: string;
+  cost: string;
+  imageUrl?: string;
+  externalLink?: string;
+}
 
 function ItineraryContent() {
   const itinerary = useQuery(api.itinerary.getItinerary);
   const generateItinerary = useAction(api.itinerary.generateItinerary);
   const { showToast } = useToast();
+  const { profileId } = useManager();
 
   const [selectedActivityId, setSelectedActivityId] = useState<Id<"activities"> | null>(null);
   const [showSuggestForm, setShowSuggestForm] = useState(false);
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [editingActivity, setEditingActivity] = useState<EditableActivity | null>(null);
 
   // Check admin status on mount
   useEffect(() => {
@@ -159,6 +175,17 @@ function ItineraryContent() {
                           commentCount: 0, // Would need to add this to the query
                         }}
                         onViewDetails={() => setSelectedActivityId(activity._id)}
+                        onEdit={() => setEditingActivity({
+                          _id: activity._id,
+                          day: activity.day,
+                          timeSlot: activity.timeSlot,
+                          title: activity.title,
+                          description: activity.description,
+                          location: activity.location,
+                          cost: activity.cost,
+                          imageUrl: activity.imageUrl,
+                          externalLink: activity.externalLink,
+                        })}
                       />
                     ))}
                   </div>
@@ -205,6 +232,17 @@ function ItineraryContent() {
           onSuccess={() => {
             setIsAdmin(true);
             showToast("Admin access unlocked!");
+          }}
+        />
+      )}
+
+      {editingActivity && profileId && (
+        <EditActivityModal
+          activity={editingActivity}
+          profileId={profileId}
+          onClose={() => setEditingActivity(null)}
+          onSuccess={() => {
+            showToast("Activity updated!");
           }}
         />
       )}

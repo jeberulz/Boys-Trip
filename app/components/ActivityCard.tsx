@@ -6,6 +6,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { Icon } from "./Icon";
 import { useToast } from "./Toast";
+import { useManager } from "./ManagerContext";
 
 interface ActivityCardProps {
   activity: {
@@ -23,15 +24,24 @@ interface ActivityCardProps {
     commentCount?: number;
     imageUrl?: string;
     externalLink?: string;
+    creatorProfileId?: Id<"profiles">;
   };
   onViewDetails: () => void;
+  onEdit?: () => void;
 }
 
-export function ActivityCard({ activity, onViewDetails }: ActivityCardProps) {
+export function ActivityCard({ activity, onViewDetails, onEdit }: ActivityCardProps) {
   const voteOnActivity = useMutation(api.itinerary.voteOnActivity);
   const { showToast } = useToast();
+  const { isManager, profileId } = useManager();
   const [userId, setUserId] = useState<string>("");
   const [isVoting, setIsVoting] = useState(false);
+
+  // Determine if user can edit this activity
+  const canEdit = isManager ||
+    (activity.source === "user" &&
+     activity.creatorProfileId !== undefined &&
+     activity.creatorProfileId === profileId);
 
   useEffect(() => {
     let id = localStorage.getItem("boys-trip-user-id");
@@ -178,10 +188,24 @@ export function ActivityCard({ activity, onViewDetails }: ActivityCardProps) {
                 {activity.cost}
               </span>
             </div>
-            <button className="text-xs text-slate-400 flex items-center gap-1 hover:text-slate-600 transition-colors">
-              <Icon name="lucide:message-square" size={12} />
-              {activity.commentCount || 0}
-            </button>
+            <div className="flex items-center gap-2">
+              {canEdit && onEdit && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit();
+                  }}
+                  className="text-xs text-slate-400 flex items-center gap-1 hover:text-orange-600 transition-colors"
+                  title="Edit activity"
+                >
+                  <Icon name="lucide:pencil" size={12} />
+                </button>
+              )}
+              <button className="text-xs text-slate-400 flex items-center gap-1 hover:text-slate-600 transition-colors">
+                <Icon name="lucide:message-square" size={12} />
+                {activity.commentCount || 0}
+              </button>
+            </div>
           </div>
         </div>
       </div>
