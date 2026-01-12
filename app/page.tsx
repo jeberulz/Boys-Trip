@@ -40,7 +40,7 @@ export default function Home() {
         {/* Main Heading */}
         <h1 className="text-5xl md:text-7xl font-extralight tracking-tighter text-slate-900 mb-6 max-w-3xl">
           Cape Town <br />
-          <span className="text-slate-400">Feb 27 — March 7</span>
+          <span className="text-slate-400">Feb 27 — March 8</span>
         </h1>
 
         {/* Subtitle */}

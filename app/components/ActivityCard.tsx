@@ -6,6 +6,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { Icon } from "./Icon";
 import { useToast } from "./Toast";
+import { useManager } from "./ManagerContext";
 
 interface ActivityCardProps {
   activity: {
@@ -23,15 +24,27 @@ interface ActivityCardProps {
     commentCount?: number;
     imageUrl?: string;
     externalLink?: string;
+    creatorProfileId?: Id<"profiles">;
+    lastEditedBy?: string;
+    lastEditedAt?: number;
   };
   onViewDetails: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
-export function ActivityCard({ activity, onViewDetails }: ActivityCardProps) {
+export function ActivityCard({ activity, onViewDetails, onEdit, onDelete }: ActivityCardProps) {
   const voteOnActivity = useMutation(api.itinerary.voteOnActivity);
   const { showToast } = useToast();
+  const { isManager, profileId } = useManager();
   const [userId, setUserId] = useState<string>("");
   const [isVoting, setIsVoting] = useState(false);
+
+  // Determine if user can edit this activity
+  const canEdit = isManager ||
+    (activity.source === "user" &&
+     activity.creatorProfileId !== undefined &&
+     activity.creatorProfileId === profileId);
 
   useEffect(() => {
     let id = localStorage.getItem("boys-trip-user-id");
@@ -94,6 +107,21 @@ export function ActivityCard({ activity, onViewDetails }: ActivityCardProps) {
   };
 
   const isHot = activity.voteScore >= 5;
+
+  // Helper function to format relative time
+  const getRelativeTime = (timestamp: number): string => {
+    const now = Date.now();
+    const diff = now - timestamp;
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) return `${days} day${days === 1 ? "" : "s"} ago`;
+    if (hours > 0) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
+    if (minutes > 0) return `${minutes} minute${minutes === 1 ? "" : "s"} ago`;
+    return "just now";
+  };
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col sm:flex-row hover:shadow-md transition-shadow group">
@@ -162,9 +190,19 @@ export function ActivityCard({ activity, onViewDetails }: ActivityCardProps) {
           </h3>
 
           {/* Description */}
-          <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-3">
+          <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-2">
             {activity.description}
           </p>
+
+          {/* Last Edited Info */}
+          {activity.lastEditedBy && (
+            <p
+              className="text-sm text-gray-500 mb-2"
+              title={activity.lastEditedAt ? getRelativeTime(activity.lastEditedAt) : undefined}
+            >
+              Edited by {activity.lastEditedBy}
+            </p>
+          )}
 
           {/* Meta */}
           <div className="flex items-center justify-between mt-auto">
@@ -178,10 +216,36 @@ export function ActivityCard({ activity, onViewDetails }: ActivityCardProps) {
                 {activity.cost}
               </span>
             </div>
-            <button className="text-xs text-slate-400 flex items-center gap-1 hover:text-slate-600 transition-colors">
-              <Icon name="lucide:message-square" size={12} />
-              {activity.commentCount || 0}
-            </button>
+            <div className="flex items-center gap-2">
+              {canEdit && onEdit && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit();
+                  }}
+                  className="text-xs text-slate-400 flex items-center gap-1 hover:text-orange-600 transition-colors"
+                  title="Edit activity"
+                >
+                  <Icon name="lucide:pencil" size={12} />
+                </button>
+              )}
+              {isManager && onDelete && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete();
+                  }}
+                  className="text-xs text-slate-400 flex items-center gap-1 hover:text-red-600 transition-colors"
+                  title="Delete activity"
+                >
+                  <Icon name="lucide:trash-2" size={12} />
+                </button>
+              )}
+              <button className="text-xs text-slate-400 flex items-center gap-1 hover:text-slate-600 transition-colors">
+                <Icon name="lucide:message-square" size={12} />
+                {activity.commentCount || 0}
+              </button>
+            </div>
           </div>
         </div>
       </div>

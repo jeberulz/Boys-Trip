@@ -50,7 +50,7 @@ export function DailyActivityWidget({ onActivityClick }: DailyActivityWidgetProp
               {tripStatus.daysUntil === 1 ? "day" : "days"} until Cape Town
             </p>
             <p className="text-sm text-slate-500 mb-6">
-              Feb 27 — March 7, 2025
+              Feb 27 — March 8, 2026
             </p>
           </div>
 

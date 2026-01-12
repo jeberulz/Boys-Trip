@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery } from "convex/react";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -17,12 +17,23 @@ interface ProfileContentProps {
 export function ProfileContent({ id }: ProfileContentProps) {
   const router = useRouter();
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [managerToggling, setManagerToggling] = useState(false);
+
   const profile = useQuery(api.profiles.get, {
     id: id as Id<"profiles">,
   });
   const hasPassword = useQuery(api.profiles.hasPassword, {
     id: id as Id<"profiles">,
   });
+  const managerCount = useQuery(api.profiles.countManagers);
+  const setItineraryManager = useMutation(api.profiles.setItineraryManager);
+
+  useEffect(() => {
+    // Check if user is admin from localStorage
+    const adminStatus = localStorage.getItem("boys-trip-admin");
+    setIsAdmin(adminStatus === "true");
+  }, []);
 
   if (profile === undefined) {
     return (
@@ -127,6 +138,62 @@ export function ProfileContent({ id }: ProfileContentProps) {
                 <h1 className="text-2xl font-bold tracking-tight text-slate-900 mb-3">
                   {profile.name}
                 </h1>
+
+                {/* Manager Badge */}
+                {profile.isItineraryManager && (
+                  <div className="flex items-center justify-center gap-1.5 mb-3">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-semibold">
+                      <Icon name="lucide:crown" size={12} />
+                      Itinerary Manager
+                    </span>
+                  </div>
+                )}
+
+                {/* Admin Toggle for Manager Role */}
+                {isAdmin && (
+                  <div className="mb-3">
+                    <button
+                      onClick={async () => {
+                        if (managerToggling) return;
+
+                        // Check limit before toggling on
+                        if (!profile.isItineraryManager && managerCount !== undefined && managerCount >= 2) {
+                          alert("Maximum of 2 managers allowed. Remove a manager first.");
+                          return;
+                        }
+
+                        setManagerToggling(true);
+                        try {
+                          await setItineraryManager({
+                            id: id as Id<"profiles">,
+                            isManager: !profile.isItineraryManager,
+                          });
+                        } catch (error) {
+                          alert(error instanceof Error ? error.message : "Failed to update manager status");
+                        } finally {
+                          setManagerToggling(false);
+                        }
+                      }}
+                      disabled={managerToggling}
+                      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                        profile.isItineraryManager
+                          ? "bg-orange-500 text-white hover:bg-orange-600"
+                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      } ${managerToggling ? "opacity-50 cursor-not-allowed" : ""}`}
+                    >
+                      {managerToggling ? (
+                        <Icon name="lucide:loader-2" size={14} className="animate-spin" />
+                      ) : (
+                        <Icon name="lucide:shield" size={14} />
+                      )}
+                      {profile.isItineraryManager ? "Remove Manager" : "Make Manager"}
+                    </button>
+                    {!profile.isItineraryManager && managerCount !== undefined && managerCount >= 2 && (
+                      <p className="text-xs text-amber-600 mt-1">Max 2 managers reached</p>
+                    )}
+                  </div>
+                )}
+
                 <div className="flex items-center justify-center gap-1.5 text-slate-500">
                   <Icon name="lucide:map-pin" size={14} />
                   <span className="text-sm">{profile.location}</span>

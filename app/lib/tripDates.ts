@@ -1,15 +1,15 @@
 // Trip date constants and utilities for Cape Town trip
-// Feb 27 - March 7, 2025 (9 days)
+// Feb 27 - March 8, 2026 (10 days)
 
 export const TRIP_START_DATE = new Date("2026-02-27T00:00:00");
-export const TRIP_END_DATE = new Date("2026-03-07T23:59:59");
+export const TRIP_END_DATE = new Date("2026-03-08T23:59:59");
 
 // Total trip days
-export const TRIP_TOTAL_DAYS = 9;
+export const TRIP_TOTAL_DAYS = 10;
 
 /**
  * Calculate which trip day it currently is based on the current date.
- * @returns Day number (1-9) during the trip, or null if before/after trip
+ * @returns Day number (1-10) during the trip, or null if before/after trip
  */
 export function getTripDay(now: Date = new Date()): number | null {
   // Normalize to start of day for comparison

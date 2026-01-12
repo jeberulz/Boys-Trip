@@ -27,11 +27,12 @@ export default defineSchema({
     photoUrl: v.optional(v.string()),
     photoStorageId: v.optional(v.id("_storage")),
     passwordHash: v.optional(v.string()),
+    isItineraryManager: v.optional(v.boolean()), // Itinerary manager role (default: false)
     createdAt: v.number(),
     updatedAt: v.optional(v.number()),
   }),
   activities: defineTable({
-    day: v.number(), // 1-7
+    day: v.number(), // 1-10
     timeSlot: v.string(), // "Morning", "Afternoon", "Evening"
     title: v.string(),
     description: v.string(),
@@ -40,6 +41,9 @@ export default defineSchema({
     source: v.string(), // "ai" or "user"
     imageUrl: v.optional(v.string()),
     externalLink: v.optional(v.string()),
+    creatorProfileId: v.optional(v.id("profiles")), // Profile ID of user who created this (for user-suggested activities)
+    lastEditedBy: v.optional(v.string()), // Name of user who last edited
+    lastEditedAt: v.optional(v.number()), // Timestamp of last edit
     createdAt: v.number(),
   }).index("by_day", ["day"]),
   votes: defineTable({

@@ -1,26 +1,47 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useQuery, useAction } from "convex/react";
+import { useQuery, useAction, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { ActivityCard } from "@/app/components/ActivityCard";
 import { ActivityModal } from "@/app/components/ActivityModal";
 import { SuggestActivityForm } from "@/app/components/SuggestActivityForm";
 import { AdminGateModal } from "@/app/components/AdminGateModal";
+import { EditActivityModal } from "@/app/components/EditActivityModal";
+import { ConfirmDialog } from "@/app/components/ConfirmDialog";
 import { Icon } from "@/app/components/Icon";
 import { Id } from "@/convex/_generated/dataModel";
 import { useToast } from "@/app/components/Toast";
+import { ManagerProvider, useManager } from "@/app/components/ManagerContext";
 
-export default function ItineraryPage() {
+// Activity type for edit modal
+interface EditableActivity {
+  _id: Id<"activities">;
+  day: number;
+  timeSlot: string;
+  title: string;
+  description: string;
+  location: string;
+  cost: string;
+  imageUrl?: string;
+  externalLink?: string;
+}
+
+function ItineraryContent() {
   const itinerary = useQuery(api.itinerary.getItinerary);
   const generateItinerary = useAction(api.itinerary.generateItinerary);
+  const deleteActivity = useMutation(api.itinerary.deleteActivity);
   const { showToast } = useToast();
+  const { profileId } = useManager();
 
   const [selectedActivityId, setSelectedActivityId] = useState<Id<"activities"> | null>(null);
   const [showSuggestForm, setShowSuggestForm] = useState(false);
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [editingActivity, setEditingActivity] = useState<EditableActivity | null>(null);
+  const [deletingActivityId, setDeletingActivityId] = useState<Id<"activities"> | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Check admin status on mount
   useEffect(() => {
@@ -53,9 +74,28 @@ export default function ItineraryPage() {
     }
   };
 
+  const handleDeleteActivity = async () => {
+    if (!deletingActivityId || !profileId) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteActivity({
+        activityId: deletingActivityId,
+        deleterProfileId: profileId,
+      });
+      showToast("Activity deleted");
+      setDeletingActivityId(null);
+    } catch (error) {
+      console.error("Error deleting activity:", error);
+      showToast("Failed to delete activity", "error");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const isEmpty = !itinerary || Object.keys(itinerary).length === 0;
 
-  // Day dates for Feb 27 - March 7, 2026
+  // Day dates for Feb 27 - March 8, 2026
   const dayDates: Record<number, string> = {
     1: "Feb 27",
     2: "Feb 28",
@@ -64,6 +104,9 @@ export default function ItineraryPage() {
     5: "March 3",
     6: "March 4",
     7: "March 5",
+    8: "March 6",
+    9: "March 7",
+    10: "March 8",
   };
 
   return (
@@ -73,7 +116,7 @@ export default function ItineraryPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 max-w-4xl mx-auto">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-              Cape Town - 7 Day Itinerary
+              Cape Town - 10 Day Itinerary
             </h1>
             <p className="text-sm text-slate-500 mt-1">
               AI-curated activities. Vote for what you want to do.
@@ -127,7 +170,7 @@ export default function ItineraryPage() {
         {/* Days */}
         {!isEmpty && (
           <div className="space-y-8">
-            {[1, 2, 3, 4, 5, 6, 7].map((day) => {
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((day) => {
               const dayActivities = itinerary?.[day] || [];
               if (dayActivities.length === 0) return null;
 
@@ -155,6 +198,18 @@ export default function ItineraryPage() {
                           commentCount: 0, // Would need to add this to the query
                         }}
                         onViewDetails={() => setSelectedActivityId(activity._id)}
+                        onEdit={() => setEditingActivity({
+                          _id: activity._id,
+                          day: activity.day,
+                          timeSlot: activity.timeSlot,
+                          title: activity.title,
+                          description: activity.description,
+                          location: activity.location,
+                          cost: activity.cost,
+                          imageUrl: activity.imageUrl,
+                          externalLink: activity.externalLink,
+                        })}
+                        onDelete={() => setDeletingActivityId(activity._id)}
                       />
                     ))}
                   </div>
@@ -204,6 +259,38 @@ export default function ItineraryPage() {
           }}
         />
       )}
+
+      {editingActivity && profileId && (
+        <EditActivityModal
+          activity={editingActivity}
+          profileId={profileId}
+          onClose={() => setEditingActivity(null)}
+          onSuccess={() => {
+            showToast("Activity updated!");
+          }}
+        />
+      )}
+
+      {deletingActivityId && (
+        <ConfirmDialog
+          title="Delete Activity"
+          message="Delete this activity? Votes and comments will also be removed."
+          confirmLabel="Delete"
+          cancelLabel="Cancel"
+          isDestructive={true}
+          isLoading={isDeleting}
+          onConfirm={handleDeleteActivity}
+          onCancel={() => setDeletingActivityId(null)}
+        />
+      )}
     </div>
+  );
+}
+
+export default function ItineraryPage() {
+  return (
+    <ManagerProvider>
+      <ItineraryContent />
+    </ManagerProvider>
   );
 }

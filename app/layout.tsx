@@ -5,6 +5,7 @@ import "./globals.css";
 import { ConvexClientProvider } from "./ConvexClientProvider";
 import { PasswordGate } from "./components/PasswordGate";
 import { ToastProvider } from "./components/Toast";
+import { ManagerProvider } from "./components/ManagerContext";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -31,9 +32,11 @@ export default function RootLayout({
     <html lang="en" className={`${geist.variable} ${instrumentSerif.variable}`}>
       <body className="font-sans">
         <ConvexClientProvider>
-          <ToastProvider>
-            <PasswordGate>{children}</PasswordGate>
-          </ToastProvider>
+          <ManagerProvider>
+            <ToastProvider>
+              <PasswordGate>{children}</PasswordGate>
+            </ToastProvider>
+          </ManagerProvider>
         </ConvexClientProvider>
       </body>
     </html>

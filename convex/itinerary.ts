@@ -221,6 +221,7 @@ export const suggestActivity = mutation({
     cost: v.string(),
     imageUrl: v.optional(v.string()),
     externalLink: v.optional(v.string()),
+    creatorProfileId: v.optional(v.id("profiles")),
   },
   handler: async (ctx, args) => {
     const activityId = await ctx.db.insert("activities", {
@@ -233,6 +234,7 @@ export const suggestActivity = mutation({
       source: "user",
       imageUrl: args.imageUrl,
       externalLink: args.externalLink,
+      creatorProfileId: args.creatorProfileId,
       createdAt: Date.now(),
     });
 
@@ -332,6 +334,120 @@ export const insertActivities = mutation({
   },
 });
 
+// Update an activity (managers can edit any, creators can edit their own user-suggested activities)
+export const updateActivity = mutation({
+  args: {
+    activityId: v.id("activities"),
+    editorProfileId: v.id("profiles"),
+    updates: v.object({
+      title: v.optional(v.string()),
+      description: v.optional(v.string()),
+      location: v.optional(v.string()),
+      cost: v.optional(v.string()),
+      day: v.optional(v.number()),
+      timeSlot: v.optional(v.string()),
+      imageUrl: v.optional(v.string()),
+      externalLink: v.optional(v.string()),
+    }),
+  },
+  handler: async (ctx, args) => {
+    // Get the activity
+    const activity = await ctx.db.get(args.activityId);
+    if (!activity) {
+      throw new Error("Activity not found");
+    }
+
+    // Get the editor's profile
+    const editorProfile = await ctx.db.get(args.editorProfileId);
+    if (!editorProfile) {
+      throw new Error("Editor profile not found");
+    }
+
+    // Check authorization
+    const isManager = editorProfile.isItineraryManager === true;
+    const isCreator = activity.creatorProfileId !== undefined &&
+                      activity.creatorProfileId === args.editorProfileId;
+    const isAiGenerated = activity.source === "ai";
+
+    // AI-generated activities can only be edited by managers
+    if (isAiGenerated && !isManager) {
+      throw new Error("Only managers can edit AI-generated activities");
+    }
+
+    // User-suggested activities can be edited by managers OR the creator
+    if (!isAiGenerated && !isManager && !isCreator) {
+      throw new Error("You can only edit activities you created or you must be a manager");
+    }
+
+    // Apply updates
+    await ctx.db.patch(args.activityId, {
+      ...args.updates,
+      lastEditedBy: editorProfile.name,
+      lastEditedAt: Date.now(),
+    });
+
+    // Return the updated activity
+    const updatedActivity = await ctx.db.get(args.activityId);
+    return updatedActivity;
+  },
+});
+
+// Delete an activity (managers only) with cascading cleanup
+export const deleteActivity = mutation({
+  args: {
+    activityId: v.id("activities"),
+    deleterProfileId: v.id("profiles"),
+  },
+  handler: async (ctx, args) => {
+    // Get the activity
+    const activity = await ctx.db.get(args.activityId);
+    if (!activity) {
+      throw new Error("Activity not found");
+    }
+
+    // Get the deleter's profile
+    const deleterProfile = await ctx.db.get(args.deleterProfileId);
+    if (!deleterProfile) {
+      throw new Error("Deleter profile not found");
+    }
+
+    // Only managers can delete activities
+    if (deleterProfile.isItineraryManager !== true) {
+      throw new Error("Only itinerary managers can delete activities");
+    }
+
+    // Delete all votes associated with the activity
+    const votes = await ctx.db
+      .query("votes")
+      .withIndex("by_activity", (q) => q.eq("activityId", args.activityId))
+      .collect();
+
+    for (const vote of votes) {
+      await ctx.db.delete(vote._id);
+    }
+
+    // Delete all comments associated with the activity
+    const comments = await ctx.db
+      .query("comments")
+      .withIndex("by_activity", (q) => q.eq("activityId", args.activityId))
+      .collect();
+
+    for (const comment of comments) {
+      await ctx.db.delete(comment._id);
+    }
+
+    // Delete the activity itself
+    await ctx.db.delete(args.activityId);
+
+    return {
+      success: true,
+      deletedActivityId: args.activityId,
+      deletedVotesCount: votes.length,
+      deletedCommentsCount: comments.length,
+    };
+  },
+});
+
 // Generate itinerary using AI (Anthropic Claude API)
 export const generateItinerary = action({
   args: {},
@@ -342,7 +458,7 @@ export const generateItinerary = action({
       throw new Error("ANTHROPIC_API_KEY not configured");
     }
 
-    const prompt = `Generate a 7-day Cape Town itinerary for a boys trip (ages 28-35).
+    const prompt = `Generate a 10-day Cape Town itinerary for a boys trip (ages 28-35).
 
 Requirements:
 - 3 activities per day minimum (ideally 3-4 activities)
@@ -372,7 +488,7 @@ Important:
 - Use only "Morning", "Afternoon", or "Evening" for timeSlot
 - Make descriptions exciting and specific to Cape Town
 - Include practical cost estimates
-- Ensure good variety across the 7 days
+- Ensure good variety across the 10 days
 - Return ONLY the JSON array, no other text or formatting`;
 
     try {
