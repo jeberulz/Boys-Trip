@@ -70,7 +70,7 @@ export default function DashboardPage() {
             <div className="text-2xl font-semibold text-slate-900 mb-1">
               Cape Town
             </div>
-            <div className="text-sm text-slate-500">Feb 27 — March 7</div>
+            <div className="text-sm text-slate-500">Feb 27 — March 8</div>
           </div>
         </div>
 

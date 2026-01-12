@@ -1,0 +1,7 @@
+# Ralph Progress Log - Itinerary Manager
+
+Branch: ralph/itinerary-manager
+Started: (pending first run)
+
+---
+

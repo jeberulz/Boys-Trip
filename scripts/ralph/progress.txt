@@ -1,7 +1,164 @@
-# Ralph Progress Log - Daily Activity Widget
+# Ralph Progress Log
+Started: Mon Jan 12 10:27:29 GMT 2026
+---
 
-Branch: ralph/daily-activity-widget
-Started: (pending first run)
+## Codebase Patterns
+- Use `v.optional(v.boolean())` for new boolean fields to maintain backward compatibility with existing records
+- Convex schema changes apply via `npx convex codegen` for type regeneration
+- Existing records will have `undefined` for new optional fields, which is treated as falsy
+- Use `v.optional(v.id("tableName"))` for optional foreign key references in Convex schema
+- Current user's profile ID is stored in localStorage under `boys-trip-my-profile-id`
+- Admin status is stored in localStorage under `boys-trip-admin` key (value "true")
+- Use Convex's `"skip"` parameter for conditional queries: `useQuery(api.profiles.get, id ? { id } : "skip")`
+- React context pattern for page-level providers: Create inner content component, wrap with provider in default export
+- Profile view is in ProfileContent.tsx component, not directly in page.tsx
 
 ---
 
+## 2026-01-12 - US-001
+- What was implemented: Added `isItineraryManager` optional boolean field to profiles table in convex/schema.ts
+- Files changed: convex/schema.ts
+- **Learnings for future iterations:**
+  - New schema fields should be optional (`v.optional()`) to avoid breaking existing records
+  - Existing profiles will have `undefined` for isItineraryManager, which is treated as `false`
+  - Use `npx convex codegen` to regenerate types after schema changes
+---
+
+## 2026-01-12 - US-002
+- What was implemented: Added tracking fields to activities schema for edit/create tracking
+  - Added `creatorProfileId` (optional Id<'profiles'>) to track who created user-suggested activities
+  - Added `lastEditedBy` (optional string) to track editor's name
+  - Added `lastEditedAt` (optional number) to track edit timestamp
+  - Updated `suggestActivity` mutation to accept and store `creatorProfileId`
+- Files changed: convex/schema.ts, convex/itinerary.ts
+- **Learnings for future iterations:**
+  - Use `v.id("tableName")` for foreign key references in Convex
+  - All new fields are optional to maintain backward compatibility with existing activities
+  - The `suggestActivity` mutation is the only place user-created activities are inserted
+---
+
+## 2026-01-12 - US-003
+- What was implemented: Created ManagerContext provider for checking manager status across components
+  - Created `ManagerContext` with `ManagerProvider` component in app/components/ManagerContext.tsx
+  - Provider stores profile ID in localStorage (`boys-trip-my-profile-id`) and fetches profile via `profiles.get` query
+  - Exposes `isManager` boolean, `managerProfile` object, `profileId`, `setProfileId`, and `isLoading` via `useManager` hook
+  - Wrapped itinerary page content with `ManagerProvider`
+- Files changed: app/components/ManagerContext.tsx (new), app/itinerary/page.tsx
+- **Learnings for future iterations:**
+  - This app uses localStorage key `boys-trip-my-profile-id` to store the current user's profile ID
+  - Use Convex's `"skip"` parameter to conditionally skip queries when ID is null
+  - React context pattern: Create inner content component, wrap with provider in default export
+  - The `profiles.get` query excludes passwordHash from responses for security
+---
+
+## 2026-01-12 - US-004
+- What was implemented: Created `updateActivity` mutation in convex/itinerary.ts
+  - Accepts activityId, editorProfileId, and updates object with optional fields (title, description, location, cost, day, timeSlot, imageUrl, externalLink)
+  - Validates authorization: managers can edit any activity, creators can edit their own user-suggested activities
+  - AI-generated activities (source: 'ai') can only be edited by managers
+  - Updates `lastEditedBy` with editor's name and `lastEditedAt` with timestamp
+  - Returns the updated activity
+- Files changed: convex/itinerary.ts
+- **Learnings for future iterations:**
+  - Convex mutations can use `ctx.db.get()` to fetch related records for authorization checks
+  - Use `ctx.db.patch()` for partial updates rather than replacing the entire record
+  - The `isItineraryManager` field defaults to undefined (falsy), so check `=== true` for explicit boolean comparison
+  - Activity source is either "ai" or "user" - use this to determine edit permissions
+---
+
+## 2026-01-12 - US-005
+- What was implemented: Created `deleteActivity` mutation in convex/itinerary.ts
+  - Accepts activityId and deleterProfileId
+  - Validates that the deleter has `isItineraryManager: true` - only managers can delete
+  - Deletes all associated votes using `by_activity` index
+  - Deletes all associated comments using `by_activity` index
+  - Deletes the activity itself
+  - Returns success confirmation object with counts of deleted votes and comments
+- Files changed: convex/itinerary.ts
+- **Learnings for future iterations:**
+  - Cascade delete pattern: delete child records (votes, comments) before parent (activity)
+  - Use existing `by_activity` indexes for efficient lookups during deletion
+  - Reference `clearItinerary` mutation for delete patterns in this codebase
+  - Return useful metadata (counts of deleted items) for better feedback to the UI
+---
+
+## 2026-01-12 - US-006
+- What was implemented: Created manager designation UI in profile view page
+  - Added `setItineraryManager` mutation in convex/profiles.ts to toggle manager status
+  - Added `countManagers` query to count current managers
+  - Mutation enforces max 2 managers limit server-side
+  - Added orange badge ("Itinerary Manager" with crown icon) visible when profile has isItineraryManager: true
+  - Added admin toggle button (Make Manager/Remove Manager) only visible to admins (localStorage 'boys-trip-admin' === 'true')
+  - Warning text shown when limit reached (max 2 managers)
+- Files changed: convex/profiles.ts, app/profile/[id]/ProfileContent.tsx
+- **Learnings for future iterations:**
+  - Admin status is stored in localStorage under 'boys-trip-admin' key
+  - Use useEffect to read localStorage on client side (SSR safe)
+  - Add server-side validation for limits even when checking client-side for better UX
+  - The profile page uses ProfileContent.tsx component (not page.tsx directly)
+---
+
+## 2026-01-12 - US-007
+- What was implemented: Created EditActivityModal component for editing activity details
+  - Modal form pre-populated with current activity data using useEffect
+  - Editable fields: title, description, location, cost, day (1-10 dropdown), timeSlot (Morning/Afternoon/Evening), imageUrl, externalLink
+  - Save button calls `updateActivity` mutation with current user's profileId
+  - Cancel button closes modal without saving
+  - Loading state with spinner while saving (disabled button)
+  - Error handling with red error message display
+  - Styled consistent with SuggestActivityForm component (same input styles, layout, z-index)
+- Files changed: app/components/EditActivityModal.tsx (new)
+- **Learnings for future iterations:**
+  - Reference SuggestActivityForm.tsx for modal styling patterns in this codebase
+  - Use z-[70] for modals to ensure they appear above other UI elements
+  - Empty optional string fields should be converted to undefined when submitting
+  - Add max-h-[90vh] overflow-y-auto for modals with many fields to ensure scrollability
+---
+
+## 2026-01-12 - US-008
+- What was implemented: Added edit button to ActivityCard for authorized users
+  - Added pencil icon button to ActivityCard that appears for authorized users
+  - Managers see edit button on all activities (using useManager context)
+  - Creators see edit button only on their own user-suggested activities (creatorProfileId match)
+  - Added creatorProfileId to ActivityCard activity interface for authorization checks
+  - Added onEdit callback prop to ActivityCard
+  - Added EditActivityModal state management to itinerary page (editingActivity state)
+  - Clicking edit button opens EditActivityModal with that activity's data
+- Files changed: app/components/ActivityCard.tsx, app/itinerary/page.tsx
+- **Learnings for future iterations:**
+  - Use e.stopPropagation() on edit button click to prevent triggering parent onClick handlers
+  - canEdit logic: `isManager || (source === "user" && creatorProfileId === profileId)`
+  - EditableActivity interface in itinerary page holds minimal fields needed for the modal
+  - Conditional rendering: `canEdit && onEdit &&` ensures button only shows when both conditions met
+---
+
+## 2026-01-12 - US-009
+- What was implemented: Added delete button to ActivityCard for managers with confirmation dialog
+  - Created reusable ConfirmDialog component (app/components/ConfirmDialog.tsx)
+  - Added trash icon button to ActivityCard visible only to managers (`isManager && onDelete`)
+  - Added onDelete callback prop to ActivityCard component
+  - Added delete confirmation dialog in itinerary page showing destructive warning
+  - Confirmation dialog calls deleteActivity mutation with manager's profileId
+  - Activity removed from UI automatically via Convex reactivity after deletion
+  - Loading state displayed while deletion is in progress
+- Files changed: app/components/ConfirmDialog.tsx (new), app/components/ActivityCard.tsx, app/itinerary/page.tsx
+- **Learnings for future iterations:**
+  - Created reusable ConfirmDialog component that can be used for any destructive actions
+  - ConfirmDialog supports isDestructive prop for red styling on delete actions
+  - Delete button pattern: `isManager && onDelete &&` (simpler than edit, only managers can delete)
+  - Use z-[70] for confirmation dialogs to match other modal z-indices
+---
+
+## 2026-01-12 - US-010
+- What was implemented: Display 'Last edited by' on activity cards
+  - Added `lastEditedBy` and `lastEditedAt` optional fields to ActivityCard interface
+  - Display "Edited by [name]" text with subtle styling (text-sm text-gray-500)
+  - Added title attribute with relative timestamp on hover (e.g., "2 hours ago", "just now")
+  - Activities without lastEditedBy show nothing extra
+  - Helper function `getRelativeTime` formats timestamps as relative time strings
+- Files changed: app/components/ActivityCard.tsx
+- **Learnings for future iterations:**
+  - The activity interface uses spread syntax `...activity` from queries, so new schema fields flow through automatically
+  - Relative time helper converts timestamps to human-readable format (days/hours/minutes/just now)
+  - Use title attribute for hover tooltips - simple and accessible
+---

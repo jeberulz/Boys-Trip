@@ -4,6 +4,11 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "./Icon";
+import { ProfileSelectorModal } from "./ProfileSelectorModal";
+import { useManager } from "./ManagerContext";
+import { ProfilePhoto } from "./ProfilePhoto";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 interface HeaderProps {
   onLogout: () => void;
@@ -12,6 +17,14 @@ interface HeaderProps {
 export function Header({ onLogout }: HeaderProps) {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showProfileSelector, setShowProfileSelector] = useState(false);
+  const { profileId, isManager, isLoading } = useManager();
+
+  // Fetch current user's profile for display
+  const currentProfile = useQuery(
+    api.profiles.get,
+    profileId ? { id: profileId } : "skip"
+  );
 
   const isActive = (path: string) => pathname === path;
 
@@ -67,6 +80,40 @@ export function Header({ onLogout }: HeaderProps) {
           >
             Join
           </Link>
+
+          {/* Profile Selector Button */}
+          <button
+            onClick={() => setShowProfileSelector(true)}
+            className={`flex items-center gap-2 px-2 py-1.5 rounded-full transition-all ${
+              currentProfile
+                ? "bg-slate-100 hover:bg-slate-200"
+                : "bg-orange-50 hover:bg-orange-100 border border-orange-200"
+            }`}
+            title={currentProfile ? `Logged in as ${currentProfile.name}` : "Select your profile"}
+          >
+            {isLoading ? (
+              <Icon name="lucide:loader-2" size={16} className="animate-spin text-slate-400" />
+            ) : currentProfile ? (
+              <>
+                <ProfilePhoto
+                  photoStorageId={currentProfile.photoStorageId}
+                  photoUrl={currentProfile.photoUrl}
+                  name={currentProfile.name}
+                  size="xs"
+                  className="w-6 h-6 rounded-full object-cover"
+                />
+                {isManager && (
+                  <Icon name="lucide:crown" size={12} className="text-orange-500" />
+                )}
+              </>
+            ) : (
+              <>
+                <Icon name="lucide:user" size={14} className="text-orange-600" />
+                <span className="text-xs font-medium text-orange-600">I am...</span>
+              </>
+            )}
+          </button>
+
           <button
             onClick={onLogout}
             className="text-xs font-medium text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-1"
@@ -125,6 +172,41 @@ export function Header({ onLogout }: HeaderProps) {
           >
             Join
           </Link>
+
+          {/* Mobile Profile Selector */}
+          <button
+            onClick={() => {
+              setShowProfileSelector(true);
+              closeMobileMenu();
+            }}
+            className={`flex items-center gap-3 py-2 text-left ${
+              currentProfile
+                ? "text-slate-700"
+                : "text-orange-600"
+            }`}
+          >
+            {currentProfile ? (
+              <>
+                <ProfilePhoto
+                  photoStorageId={currentProfile.photoStorageId}
+                  photoUrl={currentProfile.photoUrl}
+                  name={currentProfile.name}
+                  size="xs"
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+                <span className="text-sm font-medium">
+                  {currentProfile.name}
+                  {isManager && " (Manager)"}
+                </span>
+              </>
+            ) : (
+              <>
+                <Icon name="lucide:user-circle" size={20} />
+                <span className="text-sm font-medium">Select Your Profile</span>
+              </>
+            )}
+          </button>
+
           <button
             onClick={() => {
               onLogout();
@@ -137,6 +219,11 @@ export function Header({ onLogout }: HeaderProps) {
             Logout
           </button>
         </nav>
+      )}
+
+      {/* Profile Selector Modal */}
+      {showProfileSelector && (
+        <ProfileSelectorModal onClose={() => setShowProfileSelector(false)} />
       )}
     </header>
   );
