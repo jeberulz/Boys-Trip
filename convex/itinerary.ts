@@ -221,6 +221,7 @@ export const suggestActivity = mutation({
     cost: v.string(),
     imageUrl: v.optional(v.string()),
     externalLink: v.optional(v.string()),
+    creatorProfileId: v.optional(v.id("profiles")),
   },
   handler: async (ctx, args) => {
     const activityId = await ctx.db.insert("activities", {
@@ -233,6 +234,7 @@ export const suggestActivity = mutation({
       source: "user",
       imageUrl: args.imageUrl,
       externalLink: args.externalLink,
+      creatorProfileId: args.creatorProfileId,
       createdAt: Date.now(),
     });
 
@@ -342,7 +344,7 @@ export const generateItinerary = action({
       throw new Error("ANTHROPIC_API_KEY not configured");
     }
 
-    const prompt = `Generate a 7-day Cape Town itinerary for a boys trip (ages 28-35).
+    const prompt = `Generate a 10-day Cape Town itinerary for a boys trip (ages 28-35).
 
 Requirements:
 - 3 activities per day minimum (ideally 3-4 activities)
@@ -372,7 +374,7 @@ Important:
 - Use only "Morning", "Afternoon", or "Evening" for timeSlot
 - Make descriptions exciting and specific to Cape Town
 - Include practical cost estimates
-- Ensure good variety across the 7 days
+- Ensure good variety across the 10 days
 - Return ONLY the JSON array, no other text or formatting`;
 
     try {

@@ -41,6 +41,9 @@ export default defineSchema({
     source: v.string(), // "ai" or "user"
     imageUrl: v.optional(v.string()),
     externalLink: v.optional(v.string()),
+    creatorProfileId: v.optional(v.id("profiles")), // Profile ID of user who created this (for user-suggested activities)
+    lastEditedBy: v.optional(v.string()), // Name of user who last edited
+    lastEditedAt: v.optional(v.number()), // Timestamp of last edit
     createdAt: v.number(),
   }).index("by_day", ["day"]),
   votes: defineTable({
