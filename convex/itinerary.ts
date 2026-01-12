@@ -55,6 +55,53 @@ export const getItinerary = query({
   },
 });
 
+// Get activities for a specific day with vote counts (for daily widget)
+export const getActivitiesByDay = query({
+  args: { day: v.number() },
+  handler: async (ctx, args) => {
+    const activities = await ctx.db
+      .query("activities")
+      .withIndex("by_day", (q) => q.eq("day", args.day))
+      .collect();
+
+    if (activities.length === 0) {
+      return [];
+    }
+
+    // Get vote counts for each activity
+    const activitiesWithVotes = await Promise.all(
+      activities.map(async (activity) => {
+        const votes = await ctx.db
+          .query("votes")
+          .withIndex("by_activity", (q) => q.eq("activityId", activity._id))
+          .collect();
+
+        const voteScore = votes.reduce((sum, vote) => sum + vote.voteType, 0);
+        const upvotes = votes.filter(v => v.voteType === 1).length;
+        const downvotes = votes.filter(v => v.voteType === -1).length;
+
+        return {
+          ...activity,
+          voteScore,
+          upvotes,
+          downvotes,
+        };
+      })
+    );
+
+    // Sort by time slot: Morning -> Afternoon -> Evening
+    const timeSlotOrder = { "Morning": 1, "Afternoon": 2, "Evening": 3 };
+    activitiesWithVotes.sort((a, b) => {
+      const timeCompare = timeSlotOrder[a.timeSlot as keyof typeof timeSlotOrder] -
+                         timeSlotOrder[b.timeSlot as keyof typeof timeSlotOrder];
+      if (timeCompare !== 0) return timeCompare;
+      return b.voteScore - a.voteScore; // Higher votes first within same slot
+    });
+
+    return activitiesWithVotes;
+  },
+});
+
 // Get single activity with full details, votes, and comments
 export const getActivityDetails = query({
   args: { activityId: v.id("activities") },

@@ -1,0 +1,79 @@
+{
+  "project": "Boys-Trip",
+  "branchName": "ralph/daily-activity-widget",
+  "description": "Daily Activity Widget - Dynamic 'Today's Schedule' widget for the landing page showing current day's activities during the Cape Town trip",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Create trip day calculation utility",
+      "description": "As a developer, I need a utility function to determine which trip day it is based on the current date.",
+      "acceptanceCriteria": [
+        "Create utility function getTripDay() in app/lib/tripDates.ts",
+        "Trip starts Feb 27, 2025 (Day 1) and ends March 7, 2025 (Day 9)",
+        "Returns null if current date is before trip start",
+        "Returns null if current date is after trip end",
+        "Returns day number (1-9) when current date is during the trip",
+        "Export TRIP_START_DATE and TRIP_END_DATE constants",
+        "Typecheck passes"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-002",
+      "title": "Create Convex query for activities by day with vote counts",
+      "description": "As a developer, I need to fetch all activities for a specific day with their vote counts so the widget can display them.",
+      "acceptanceCriteria": [
+        "Create query getActivitiesByDay(day: number) in convex/itinerary.ts",
+        "Query uses existing by_day index on activities table",
+        "Each activity includes aggregated vote count from votes table",
+        "Results sorted by time slot: Morning first, then Afternoon, then Evening",
+        "Returns empty array if no activities exist for that day",
+        "Typecheck passes"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-003",
+      "title": "Create DailyActivityWidget component with all states",
+      "description": "As a user, I want to see a widget showing today's activities with appropriate states for before, during, and after the trip.",
+      "acceptanceCriteria": [
+        "Create DailyActivityWidget component in app/components/DailyActivityWidget.tsx",
+        "During trip: Shows 'Today's Schedule - Day X' header with activities grid",
+        "During trip: Each activity card shows image, title, time slot badge, location, cost, vote count, external link",
+        "During trip: Time slot badges colored: Morning=amber, Afternoon=orange, Evening=indigo",
+        "During trip: Empty state with friendly message when no activities for current day",
+        "Pre-trip: Shows countdown 'X days until Cape Town' with optional Day 1 preview",
+        "Post-trip: Shows 'Trip Complete' message with link to /itinerary",
+        "Responsive: Single column on mobile, 2 columns on md screens",
+        "Accepts onActivityClick callback prop for modal integration",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-004",
+      "title": "Integrate widget into landing page with modal interaction",
+      "description": "As a user, I want to see the daily activity widget on the landing page and click activities to view full details.",
+      "acceptanceCriteria": [
+        "Add DailyActivityWidget to app/page.tsx below Recent Additions section",
+        "Widget section styled consistently: bg-slate-50/50, border-t, px-6 py-12, max-w-4xl mx-auto",
+        "Clicking an activity card opens existing ActivityModal with that activity",
+        "Reuse existing selectedActivityId state and ActivityModal already in landing page",
+        "Modal closes cleanly and returns to landing page",
+        "Widget visible on landing page (shows appropriate state based on current date)",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": ""
+    }
+  ]
+}

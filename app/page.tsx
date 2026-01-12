@@ -9,6 +9,7 @@ import { ProfileCard } from "@/app/components/ProfileCard";
 import { ActivityCard } from "@/app/components/ActivityCard";
 import { ActivityModal } from "@/app/components/ActivityModal";
 import { SuggestActivityForm } from "@/app/components/SuggestActivityForm";
+import { DailyActivityWidget } from "@/app/components/DailyActivityWidget";
 import { Id } from "@/convex/_generated/dataModel";
 import { useToast } from "@/app/components/Toast";
 
@@ -138,6 +139,9 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      {/* Daily Activity Widget */}
+      <DailyActivityWidget onActivityClick={setSelectedActivityId} />
 
       {/* Modals */}
       {selectedActivityId && (
