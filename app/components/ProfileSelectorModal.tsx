@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Icon } from "./Icon";
@@ -12,8 +14,18 @@ interface ProfileSelectorModalProps {
 }
 
 export function ProfileSelectorModal({ onClose }: ProfileSelectorModalProps) {
+  const [mounted, setMounted] = useState(false);
   const profiles = useQuery(api.profiles.list);
   const { profileId, setProfileId } = useManager();
+
+  useEffect(() => {
+    setMounted(true);
+    // Prevent body scroll when modal is open
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
 
   const handleSelectProfile = (id: Id<"profiles">) => {
     setProfileId(id);
@@ -25,16 +37,16 @@ export function ProfileSelectorModal({ onClose }: ProfileSelectorModalProps) {
     onClose();
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  const modalContent = (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm z-0"
         onClick={onClose}
       />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full max-h-[80vh] overflow-hidden animate-fade-in">
+      <div className="relative z-10 bg-white rounded-2xl shadow-xl max-w-md w-full max-h-[80vh] overflow-hidden animate-fade-in">
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
           <div>
@@ -120,4 +132,8 @@ export function ProfileSelectorModal({ onClose }: ProfileSelectorModalProps) {
       </div>
     </div>
   );
+
+  // Use portal to render modal at document body level
+  if (!mounted) return null;
+  return createPortal(modalContent, document.body);
 }
