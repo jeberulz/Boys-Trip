@@ -24,3 +24,25 @@ Started: (pending first run)
   - Sorting uses timeSlotOrder object pattern for consistent Morning → Afternoon → Evening ordering
 ---
 
+## 2026-01-12 - US-003
+- What was implemented: Fixed time slot badge colors in ActivityCard to match PRD specification
+- Files changed: app/components/ActivityCard.tsx
+- **Learnings for future iterations:**
+  - The DailyActivityWidget component already existed from a previous feature (commit b197543)
+  - Only color adjustment was needed: Afternoon sky→orange, Evening violet→indigo
+  - The widget uses getTripStatus() to determine pre-trip/during-trip/post-trip state
+  - Current date (Jan 2026) shows post-trip state since trip was Feb-March 2025
+  - ActivityCard is shared component used by both DailyActivityWidget and itinerary page
+---
+
+## 2026-01-12 - US-004
+- What was implemented: Verified integration of DailyActivityWidget into landing page with modal interaction
+- Files changed: None (implementation already existed from commit b197543)
+- **Learnings for future iterations:**
+  - The DailyActivityWidget was already integrated in app/page.tsx from the initial feature commit
+  - Landing page uses selectedActivityId state (useState hook) to control ActivityModal
+  - The onActivityClick callback pattern allows parent components to control modal state
+  - Widget styling (bg-slate-50/50, border-t, px-6 py-12, max-w-4xl mx-auto) matches other sections
+  - ActivityModal is reused across the app - it accepts activityId and fetches activity data itself
+---
+
