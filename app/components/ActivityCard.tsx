@@ -79,9 +79,9 @@ export function ActivityCard({ activity, onViewDetails }: ActivityCardProps) {
       case "Morning":
         return "bg-amber-100 text-amber-700 border-amber-200";
       case "Afternoon":
-        return "bg-sky-100 text-sky-700 border-sky-200";
+        return "bg-orange-100 text-orange-700 border-orange-200";
       case "Evening":
-        return "bg-violet-100 text-violet-700 border-violet-200";
+        return "bg-indigo-100 text-indigo-700 border-indigo-200";
       default:
         return "bg-slate-100 text-slate-700 border-slate-200";
     }
