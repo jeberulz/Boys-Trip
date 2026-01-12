@@ -25,6 +25,8 @@ interface ActivityCardProps {
     imageUrl?: string;
     externalLink?: string;
     creatorProfileId?: Id<"profiles">;
+    lastEditedBy?: string;
+    lastEditedAt?: number;
   };
   onViewDetails: () => void;
   onEdit?: () => void;
@@ -106,6 +108,21 @@ export function ActivityCard({ activity, onViewDetails, onEdit, onDelete }: Acti
 
   const isHot = activity.voteScore >= 5;
 
+  // Helper function to format relative time
+  const getRelativeTime = (timestamp: number): string => {
+    const now = Date.now();
+    const diff = now - timestamp;
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) return `${days} day${days === 1 ? "" : "s"} ago`;
+    if (hours > 0) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
+    if (minutes > 0) return `${minutes} minute${minutes === 1 ? "" : "s"} ago`;
+    return "just now";
+  };
+
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col sm:flex-row hover:shadow-md transition-shadow group">
       {/* Content */}
@@ -173,9 +190,19 @@ export function ActivityCard({ activity, onViewDetails, onEdit, onDelete }: Acti
           </h3>
 
           {/* Description */}
-          <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-3">
+          <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-2">
             {activity.description}
           </p>
+
+          {/* Last Edited Info */}
+          {activity.lastEditedBy && (
+            <p
+              className="text-sm text-gray-500 mb-2"
+              title={activity.lastEditedAt ? getRelativeTime(activity.lastEditedAt) : undefined}
+            >
+              Edited by {activity.lastEditedBy}
+            </p>
+          )}
 
           {/* Meta */}
           <div className="flex items-center justify-between mt-auto">
