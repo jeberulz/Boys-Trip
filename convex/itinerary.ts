@@ -392,6 +392,62 @@ export const updateActivity = mutation({
   },
 });
 
+// Delete an activity (managers only) with cascading cleanup
+export const deleteActivity = mutation({
+  args: {
+    activityId: v.id("activities"),
+    deleterProfileId: v.id("profiles"),
+  },
+  handler: async (ctx, args) => {
+    // Get the activity
+    const activity = await ctx.db.get(args.activityId);
+    if (!activity) {
+      throw new Error("Activity not found");
+    }
+
+    // Get the deleter's profile
+    const deleterProfile = await ctx.db.get(args.deleterProfileId);
+    if (!deleterProfile) {
+      throw new Error("Deleter profile not found");
+    }
+
+    // Only managers can delete activities
+    if (deleterProfile.isItineraryManager !== true) {
+      throw new Error("Only itinerary managers can delete activities");
+    }
+
+    // Delete all votes associated with the activity
+    const votes = await ctx.db
+      .query("votes")
+      .withIndex("by_activity", (q) => q.eq("activityId", args.activityId))
+      .collect();
+
+    for (const vote of votes) {
+      await ctx.db.delete(vote._id);
+    }
+
+    // Delete all comments associated with the activity
+    const comments = await ctx.db
+      .query("comments")
+      .withIndex("by_activity", (q) => q.eq("activityId", args.activityId))
+      .collect();
+
+    for (const comment of comments) {
+      await ctx.db.delete(comment._id);
+    }
+
+    // Delete the activity itself
+    await ctx.db.delete(args.activityId);
+
+    return {
+      success: true,
+      deletedActivityId: args.activityId,
+      deletedVotesCount: votes.length,
+      deletedCommentsCount: comments.length,
+    };
+  },
+});
+
 // Generate itinerary using AI (Anthropic Claude API)
 export const generateItinerary = action({
   args: {},
