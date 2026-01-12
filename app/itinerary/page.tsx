@@ -10,8 +10,9 @@ import { AdminGateModal } from "@/app/components/AdminGateModal";
 import { Icon } from "@/app/components/Icon";
 import { Id } from "@/convex/_generated/dataModel";
 import { useToast } from "@/app/components/Toast";
+import { ManagerProvider } from "@/app/components/ManagerContext";
 
-export default function ItineraryPage() {
+function ItineraryContent() {
   const itinerary = useQuery(api.itinerary.getItinerary);
   const generateItinerary = useAction(api.itinerary.generateItinerary);
   const { showToast } = useToast();
@@ -55,7 +56,7 @@ export default function ItineraryPage() {
 
   const isEmpty = !itinerary || Object.keys(itinerary).length === 0;
 
-  // Day dates for Feb 27 - March 7, 2026
+  // Day dates for Feb 27 - March 8, 2026
   const dayDates: Record<number, string> = {
     1: "Feb 27",
     2: "Feb 28",
@@ -64,6 +65,9 @@ export default function ItineraryPage() {
     5: "March 3",
     6: "March 4",
     7: "March 5",
+    8: "March 6",
+    9: "March 7",
+    10: "March 8",
   };
 
   return (
@@ -73,7 +77,7 @@ export default function ItineraryPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 max-w-4xl mx-auto">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-              Cape Town - 7 Day Itinerary
+              Cape Town - 10 Day Itinerary
             </h1>
             <p className="text-sm text-slate-500 mt-1">
               AI-curated activities. Vote for what you want to do.
@@ -127,7 +131,7 @@ export default function ItineraryPage() {
         {/* Days */}
         {!isEmpty && (
           <div className="space-y-8">
-            {[1, 2, 3, 4, 5, 6, 7].map((day) => {
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((day) => {
               const dayActivities = itinerary?.[day] || [];
               if (dayActivities.length === 0) return null;
 
@@ -205,5 +209,13 @@ export default function ItineraryPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function ItineraryPage() {
+  return (
+    <ManagerProvider>
+      <ItineraryContent />
+    </ManagerProvider>
   );
 }
