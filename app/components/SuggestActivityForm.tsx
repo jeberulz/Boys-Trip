@@ -6,18 +6,20 @@ import { api } from "@/convex/_generated/api";
 import { Icon } from "./Icon";
 
 interface SuggestActivityFormProps {
+  defaultDay?: number;
   onClose: () => void;
   onSuccess: () => void;
 }
 
 export function SuggestActivityForm({
+  defaultDay,
   onClose,
   onSuccess,
 }: SuggestActivityFormProps) {
   const suggestActivity = useMutation(api.itinerary.suggestActivity);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    day: 1,
+    day: defaultDay ?? 1,
     timeSlot: "Morning",
     title: "",
     description: "",
@@ -82,7 +84,7 @@ export function SuggestActivityForm({
                 required
                 className="w-full bg-slate-50 border border-slate-200 rounded px-3 py-2 text-xs outline-none focus:border-orange-500 transition-colors"
               >
-                {[1, 2, 3, 4, 5, 6, 7].map((day) => (
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((day) => (
                   <option key={day} value={day}>
                     Day {day}
                   </option>

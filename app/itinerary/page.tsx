@@ -36,6 +36,7 @@ function ItineraryContent() {
 
   const [selectedActivityId, setSelectedActivityId] = useState<Id<"activities"> | null>(null);
   const [showSuggestForm, setShowSuggestForm] = useState(false);
+  const [suggestDay, setSuggestDay] = useState<number | undefined>(undefined);
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -172,7 +173,6 @@ function ItineraryContent() {
           <div className="space-y-8">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((day) => {
               const dayActivities = itinerary?.[day] || [];
-              if (dayActivities.length === 0) return null;
 
               return (
                 <div key={day} className="relative">
@@ -188,31 +188,48 @@ function ItineraryContent() {
                     </div>
                   </div>
 
-                  {/* Activities Grid */}
-                  <div className="grid grid-cols-1 gap-4">
-                    {dayActivities.map((activity) => (
-                      <ActivityCard
-                        key={activity._id}
-                        activity={{
-                          ...activity,
-                          commentCount: 0, // Would need to add this to the query
+                  {dayActivities.length === 0 ? (
+                    <div className="bg-white rounded-lg border border-dashed border-slate-200 p-6 text-center">
+                      <p className="text-sm text-slate-400 mb-3">
+                        No activities planned for this day
+                      </p>
+                      <button
+                        onClick={() => {
+                          setSuggestDay(day);
+                          setShowSuggestForm(true);
                         }}
-                        onViewDetails={() => setSelectedActivityId(activity._id)}
-                        onEdit={() => setEditingActivity({
-                          _id: activity._id,
-                          day: activity.day,
-                          timeSlot: activity.timeSlot,
-                          title: activity.title,
-                          description: activity.description,
-                          location: activity.location,
-                          cost: activity.cost,
-                          imageUrl: activity.imageUrl,
-                          externalLink: activity.externalLink,
-                        })}
-                        onDelete={() => setDeletingActivityId(activity._id)}
-                      />
-                    ))}
-                  </div>
+                        className="inline-flex items-center gap-1.5 text-xs font-medium text-orange-600 hover:text-orange-700 transition-colors"
+                      >
+                        <Icon name="lucide:plus" size={14} />
+                        Suggest an activity
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 gap-4">
+                      {dayActivities.map((activity) => (
+                        <ActivityCard
+                          key={activity._id}
+                          activity={{
+                            ...activity,
+                            commentCount: 0, // Would need to add this to the query
+                          }}
+                          onViewDetails={() => setSelectedActivityId(activity._id)}
+                          onEdit={() => setEditingActivity({
+                            _id: activity._id,
+                            day: activity.day,
+                            timeSlot: activity.timeSlot,
+                            title: activity.title,
+                            description: activity.description,
+                            location: activity.location,
+                            cost: activity.cost,
+                            imageUrl: activity.imageUrl,
+                            externalLink: activity.externalLink,
+                          })}
+                          onDelete={() => setDeletingActivityId(activity._id)}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -243,7 +260,11 @@ function ItineraryContent() {
 
       {showSuggestForm && (
         <SuggestActivityForm
-          onClose={() => setShowSuggestForm(false)}
+          defaultDay={suggestDay}
+          onClose={() => {
+            setShowSuggestForm(false);
+            setSuggestDay(undefined);
+          }}
           onSuccess={() => {
             showToast("Activity suggestion added!");
           }}
